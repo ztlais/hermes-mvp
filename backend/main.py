@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import init_db
 from routers import prospects, investors, matching, scouting, learning, templates, calendar, documents, simulateur, projects, opportunities, prep
 from routers import auth as auth_router
+from routers import git as git_router
 from auth import get_current_user
 
 app = FastAPI(title="Hermes MVP API", version="1.0.0")
@@ -33,6 +34,7 @@ app.include_router(simulateur.router, **protected)
 app.include_router(projects.router, **protected)
 app.include_router(opportunities.router, **protected)
 app.include_router(prep.router, **protected)
+app.include_router(git_router.router, **protected)  # réservé admin
 
 
 @app.on_event("startup")

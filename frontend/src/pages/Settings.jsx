@@ -7,6 +7,17 @@ export default function Settings({ user }) {
   const [form, setForm] = useState({ current: '', new: '', confirm: '' })
   const [msg, setMsg] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [pushState, setPushState] = useState({ loading: false, msg: null })
+
+  const handleGitPush = async () => {
+    setPushState({ loading: true, msg: null })
+    try {
+      const res = await api.post('/git/push')
+      setPushState({ loading: false, msg: { type: 'success', text: res.data.message } })
+    } catch (e) {
+      setPushState({ loading: false, msg: { type: 'error', text: e.response?.data?.detail || 'Erreur push GitHub' } })
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -116,6 +127,36 @@ export default function Settings({ user }) {
             {saving ? '⏳ Changement en cours...' : '🔑 Changer le mot de passe'}
           </button>
         </form>
+        </div>
+      )}
+
+      {/* GitHub Push — admin only */}
+      {user?.role === 'admin' && (
+        <div style={{ ...card, marginTop: 16 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', margin: '0 0 12px' }}>🚀 Push GitHub</h3>
+          <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>
+            Met à jour le repo GitHub avec les dernières modifications du code.
+          </p>
+          {pushState.msg && (
+            <div style={{
+              padding: '10px 14px', borderRadius: 8, marginBottom: 14, fontSize: 13,
+              background: pushState.msg.type === 'success' ? '#f0fdf4' : '#fef2f2',
+              color: pushState.msg.type === 'success' ? '#16a34a' : '#dc2626',
+              border: pushState.msg.type === 'success' ? '1px solid #bbf7d0' : '1px solid #fecaca',
+            }}>
+              {pushState.msg.text}
+            </div>
+          )}
+          <button onClick={handleGitPush} disabled={pushState.loading}
+            style={{
+              padding: '10px 20px', borderRadius: 8, border: 'none',
+              background: pushState.loading ? '#9ca3af' : '#1f2937',
+              color: '#fff', fontSize: 14, fontWeight: 600,
+              cursor: pushState.loading ? 'default' : 'pointer',
+              width: '100%',
+            }}>
+            {pushState.loading ? '⏳ Push en cours...' : '🚀 Push to GitHub'}
+          </button>
         </div>
       )}
   </div>
