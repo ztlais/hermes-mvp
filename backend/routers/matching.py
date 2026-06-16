@@ -81,60 +81,60 @@ def compute_score(investor: Investor, project: Project) -> tuple[int, list[dict]
     tech_match = tech_matches(investor.technologies, proj_tech)
     if tech_match is True:
         score += 35
-        reasons.append({'label': 'Technologie ✓', 'detail': proj_tech, 'pts': 35, 'match': True})
+        reasons.append({'label': 'Technologie ✓', 'key': 'tech_match', 'detail': proj_tech, 'pts': 35, 'match': True})
     elif tech_match is None:
         score += 15
-        reasons.append({'label': 'Technologie', 'detail': 'Pas de filtre tech', 'pts': 15, 'match': True})
+        reasons.append({'label': 'Technologie', 'key': 'tech_no_filter', 'detail': proj_tech, 'pts': 15, 'match': True})
     else:
-        reasons.append({'label': 'Technologie ✗', 'detail': f'{proj_tech} non couvert par {investor.technologies[:40]}', 'pts': 0, 'match': False})
+        reasons.append({'label': 'Technologie ✗', 'key': 'tech_no_match', 'detail': proj_tech, 'pts': 0, 'match': False})
 
     # Pays — 25 pts
     ctry_match = country_matches(investor.target_countries, project.country)
     if ctry_match is True:
         score += 25
-        reasons.append({'label': 'Pays ✓', 'detail': project.country, 'pts': 25, 'match': True})
+        reasons.append({'label': 'Pays ✓', 'key': 'country_match', 'detail': project.country, 'pts': 25, 'match': True})
     elif ctry_match is None:
         score += 10
-        reasons.append({'label': 'Pays', 'detail': 'Pas de filtre pays', 'pts': 10, 'match': True})
+        reasons.append({'label': 'Pays', 'key': 'country_no_filter', 'detail': project.country, 'pts': 10, 'match': True})
     else:
-        reasons.append({'label': 'Pays ✗', 'detail': f'{project.country} non couvert', 'pts': 0, 'match': False})
+        reasons.append({'label': 'Pays ✗', 'key': 'country_no_match', 'detail': project.country, 'pts': 0, 'match': False})
 
     # Stade — 20 pts
     stade_match = stage_matches(investor.deal_stages, proj_stage)
     if stade_match is True:
         score += 20
-        reasons.append({'label': 'Stade ✓', 'detail': proj_stage, 'pts': 20, 'match': True})
+        reasons.append({'label': 'Stade ✓', 'key': 'stage_match', 'detail': proj_stage, 'pts': 20, 'match': True})
     elif stade_match is None:
         score += 10
-        reasons.append({'label': 'Stade', 'detail': 'Pas de filtre stade', 'pts': 10, 'match': True})
+        reasons.append({'label': 'Stade', 'key': 'stage_no_filter', 'detail': proj_stage, 'pts': 10, 'match': True})
     else:
-        reasons.append({'label': 'Stade ✗', 'detail': f'{proj_stage} non couvert', 'pts': 0, 'match': False})
+        reasons.append({'label': 'Stade ✗', 'key': 'stage_no_match', 'detail': proj_stage, 'pts': 0, 'match': False})
 
     # Capacité MW — 15 pts
     if project.capacity_mw:
         if investor.min_mw and investor.max_mw:
             if investor.min_mw <= project.capacity_mw <= investor.max_mw:
                 score += 15
-                reasons.append({'label': 'Capacité ✓', 'detail': f'{project.capacity_mw} MW dans [{investor.min_mw}–{investor.max_mw}]', 'pts': 15, 'match': True})
+                reasons.append({'label': 'Capacité ✓', 'key': 'capacity_match', 'detail': f'{project.capacity_mw} MW [{investor.min_mw}–{investor.max_mw}]', 'pts': 15, 'match': True})
             else:
-                reasons.append({'label': 'Capacité ✗', 'detail': f'{project.capacity_mw} MW hors fourchette [{investor.min_mw}–{investor.max_mw}]', 'pts': 0, 'match': False})
+                reasons.append({'label': 'Capacité ✗', 'key': 'capacity_no_match', 'detail': f'{project.capacity_mw} MW [{investor.min_mw}–{investor.max_mw}]', 'pts': 0, 'match': False})
         elif investor.min_mw and project.capacity_mw >= investor.min_mw:
             score += 10
-            reasons.append({'label': 'Capacité ✓', 'detail': f'{project.capacity_mw} MW ≥ {investor.min_mw} MW min', 'pts': 10, 'match': True})
+            reasons.append({'label': 'Capacité ✓', 'key': 'capacity_match', 'detail': f'{project.capacity_mw} MW ≥ {investor.min_mw} MW', 'pts': 10, 'match': True})
         elif investor.max_mw and project.capacity_mw <= investor.max_mw:
             score += 10
-            reasons.append({'label': 'Capacité ✓', 'detail': f'{project.capacity_mw} MW ≤ {investor.max_mw} MW max', 'pts': 10, 'match': True})
+            reasons.append({'label': 'Capacité ✓', 'key': 'capacity_match', 'detail': f'{project.capacity_mw} MW ≤ {investor.max_mw} MW', 'pts': 10, 'match': True})
         else:
             score += 5
-            reasons.append({'label': 'Capacité', 'detail': f'{project.capacity_mw} MW (pas de fourchette)', 'pts': 5, 'match': True})
+            reasons.append({'label': 'Capacité', 'key': 'capacity_no_range', 'detail': f'{project.capacity_mw} MW', 'pts': 5, 'match': True})
     else:
         score += 5
-        reasons.append({'label': 'Capacité', 'detail': 'Capacité non renseignée', 'pts': 5, 'match': True})
+        reasons.append({'label': 'Capacité', 'key': 'capacity_no_range', 'detail': '', 'pts': 5, 'match': True})
 
     # NDA — 5 pts bonus
     if project.nda_signed == 'Oui':
         score += 5
-        reasons.append({'label': 'NDA signé ✓', 'detail': 'Données confidentielles disponibles', 'pts': 5, 'match': True})
+        reasons.append({'label': 'NDA signé ✓', 'key': 'nda_bonus', 'detail': '', 'pts': 5, 'match': True})
 
     return min(score, 100), reasons
 
@@ -159,20 +159,52 @@ class MatchResult(BaseModel):
     reasons: list
 
 
+@router.get("/investors")
+def get_matching_investors(db: Session = Depends(get_db)):
+    investors = db.query(Investor).filter(Investor.status == 'active').all()
+    return [{"id": i.id, "company": i.company, "contact_name": i.contact_name} for i in investors]
+
+
+@router.get("/developers")
+def get_matching_developers(db: Session = Depends(get_db)):
+    # Collect developers from projects and prospects
+    devs = set()
+    project_devs = db.query(Project.developer_name).filter(Project.developer_name.isnot(None)).distinct().all()
+    for d in project_devs:
+        if d[0] and d[0].strip():
+            devs.add(d[0].strip())
+    # Also from prospects
+    prospects = db.query(Prospect.company, Prospect.contact_name).filter(Prospect.type == 'developer').all()
+    for p in prospects:
+        if p[0] and p[0].strip():
+            devs.add(p[0].strip())
+    return sorted([{"name": d} for d in devs], key=lambda x: x["name"].lower())
+
+
 @router.get("/", response_model=List[MatchResult])
 def get_matches(
     min_score: int = 30,
     technology: Optional[str] = None,
     country: Optional[str] = None,
+    investor_id: Optional[int] = None,
+    developer: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    investors = db.query(Investor).filter(Investor.status == 'active').all()
+    query = db.query(Investor).filter(Investor.status == 'active')
+    if investor_id:
+        query = query.filter(Investor.id == investor_id)
+    investors = query.all()
+
     projects = db.query(Project).all()
 
     if technology:
         projects = [p for p in projects if p.technology and p.technology.value == technology]
     if country:
         projects = [p for p in projects if p.country and p.country.upper() == country.upper()]
+    if developer:
+        dl = developer.lower()
+        projects = [p for p in projects if (p.developer_name and dl in p.developer_name.lower())
+                     or (p.developer_id and dl in str(p.developer_id))]
 
     # Précharger les prospects pour la résolution des développeurs
     prospects = {p.id: p.company for p in db.query(Prospect).all()}

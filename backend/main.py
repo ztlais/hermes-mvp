@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
-from routers import prospects, investors, matching, scouting, learning, templates, calendar, documents
+from routers import prospects, investors, matching, scouting, learning, templates, calendar, documents, simulateur, projects, opportunities, prep
 from routers import auth as auth_router
 from auth import get_current_user
 
@@ -29,6 +29,10 @@ app.include_router(learning.router, **protected)
 app.include_router(templates.router, **protected)
 app.include_router(calendar.router, **protected)
 app.include_router(documents.router, **protected)
+app.include_router(simulateur.router, **protected)
+app.include_router(projects.router, **protected)
+app.include_router(opportunities.router, **protected)
+app.include_router(prep.router, **protected)
 
 
 @app.on_event("startup")

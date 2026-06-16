@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import api from '../api/client'
+import { useLang } from '../context/LanguageContext'
 
 const DOC_TYPES = [
   { value: 'nda',           label: 'NDA',            color: '#7c3aed', bg: '#ede9fe' },
@@ -16,6 +17,7 @@ function DocTypeStyle(type) {
 }
 
 function DocumentsSection({ prospectId }) {
+  const { t } = useLang()
   const [docs, setDocs] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', url: '', doc_type: 'nda' })
@@ -42,17 +44,16 @@ function DocumentsSection({ prospectId }) {
     <div style={{ margin: '16px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          📁 Documents
+          {t('common.documents')}
         </div>
         <button onClick={() => setShowForm(!showForm)} style={{
           padding: '3px 10px', borderRadius: 5, border: '1px solid #d1d5db',
           background: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, color: '#374151',
         }}>
-          + Ajouter
+          {t('docs.add')}
         </button>
       </div>
 
-      {/* Mini boutons documents */}
       {docs.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: showForm ? 10 : 0 }}>
           {docs.map(doc => {
@@ -84,10 +85,9 @@ function DocumentsSection({ prospectId }) {
       )}
 
       {docs.length === 0 && !showForm && (
-        <div style={{ fontSize: 12, color: '#d1d5db', fontStyle: 'italic' }}>Aucun document lié</div>
+        <div style={{ fontSize: 12, color: '#d1d5db', fontStyle: 'italic' }}>{t('common.noDocuments')}</div>
       )}
 
-      {/* Formulaire ajout */}
       {showForm && (
         <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
           <div style={{ marginBottom: 8 }}>
@@ -96,12 +96,12 @@ function DocumentsSection({ prospectId }) {
             </select>
             <input style={{ ...inp, marginBottom: 6 }} placeholder="Nom (ex: NDA Viridi)" value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <input style={inp} placeholder="Lien Google Drive ou URL" value={form.url}
+            <input style={inp} placeholder={t('docs.urlPH')} value={form.url}
               onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
           </div>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowForm(false)} style={{ padding: '5px 12px', borderRadius: 5, border: '1px solid #d1d5db', background: '#fff', fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-            <button onClick={handleAdd} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: '#2563eb', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>Ajouter</button>
+            <button onClick={() => setShowForm(false)} style={{ padding: '5px 12px', borderRadius: 5, border: '1px solid #d1d5db', background: '#fff', fontSize: 12, cursor: 'pointer' }}>{t('common.cancel')}</button>
+            <button onClick={handleAdd} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: '#2563eb', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>{t('common.add')}</button>
           </div>
         </div>
       )}
@@ -109,30 +109,31 @@ function DocumentsSection({ prospectId }) {
   )
 }
 
-const STATUS_OPTIONS = [
-  { value: 'to_contact',     label: 'À contacter',    color: '#6b7280', bg: '#f3f4f6' },
-  { value: 'contacted',      label: 'Contacté',       color: '#1e40af', bg: '#dbeafe' },
-  { value: 'in_discussion',  label: 'En discussion',  color: '#92400e', bg: '#fef3c7' },
-  { value: 'meeting_scheduled', label: 'RDV planifié',color: '#5b21b6', bg: '#ede9fe' },
-  { value: 'nda_signed',     label: 'NDA signé',      color: '#065f46', bg: '#d1fae5' },
-  { value: 'deal_in_progress',label: 'Deal en cours', color: '#155e75', bg: '#cffafe' },
-  { value: 'closed',         label: 'Fermé',          color: '#065f46', bg: '#d1fae5' },
-  { value: 'rejected',       label: 'Rejeté',         color: '#991b1b', bg: '#fee2e2' },
+const STATUS_VALUES = [
+  { value: 'to_contact',        color: '#6b7280', bg: '#f3f4f6' },
+  { value: 'contacted',         color: '#1e40af', bg: '#dbeafe' },
+  { value: 'in_discussion',     color: '#92400e', bg: '#fef3c7' },
+  { value: 'meeting_scheduled', color: '#5b21b6', bg: '#ede9fe' },
+  { value: 'nda_signed',        color: '#065f46', bg: '#d1fae5' },
+  { value: 'deal_in_progress',  color: '#155e75', bg: '#cffafe' },
+  { value: 'closed',            color: '#065f46', bg: '#d1fae5' },
+  { value: 'rejected',          color: '#991b1b', bg: '#fee2e2' },
 ]
 
-const TYPE_OPTIONS = [
-  { value: 'developer',    label: '🔧 Développeur' },
-  { value: 'investor',     label: '🏦 Investisseur' },
-  { value: 'ipp',          label: '⚡ IPP' },
-  { value: 'family_office',label: '👨‍👩‍👧 Family Office' },
-  { value: 'other',        label: '📌 Autre' },
+const TYPE_VALUES = [
+  { value: 'developer' },
+  { value: 'investor' },
+  { value: 'ipp' },
+  { value: 'family_office' },
+  { value: 'other' },
 ]
 
 function StatusBadge({ value }) {
-  const s = STATUS_OPTIONS.find(o => o.value === value) || STATUS_OPTIONS[0]
+  const { t } = useLang()
+  const s = STATUS_VALUES.find(o => o.value === value) || STATUS_VALUES[0]
   return (
     <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>
-      {s.label}
+      {t('status.' + value)}
     </span>
   )
 }
@@ -155,12 +156,11 @@ function InfoRow({ icon, label, value, href }) {
 }
 
 function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
-  const status = STATUS_OPTIONS.find(s => s.value === prospect.status)
-  const type = TYPE_OPTIONS.find(t => t.value === prospect.type)
+  const { t } = useLang()
+  const statusStyle = STATUS_VALUES.find(s => s.value === prospect.status)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
       <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ flex: 1, paddingRight: 8 }}>
@@ -169,14 +169,14 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
             </h2>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <StatusBadge value={prospect.status} />
-              {type && (
+              {prospect.type && (
                 <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 700, background: '#f3f4f6', color: '#4b5563' }}>
-                  {type.label}
+                  {t('type.' + prospect.type)}
                 </span>
               )}
               {prospect.nda_signed === 'Oui' && (
                 <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 700, background: '#d1fae5', color: '#065f46' }}>
-                  ✅ NDA signé
+                  ✅ {t('status.nda_signed')}
                 </span>
               )}
             </div>
@@ -185,27 +185,23 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
         </div>
       </div>
 
-      {/* Contenu scrollable */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
-
-        {/* Contact */}
         <div style={{ marginTop: 12, marginBottom: 4 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
-            Contact
+            {t('prospects.detail.contact')}
           </div>
-          <InfoRow icon="👤" label="Nom" value={prospect.contact_name} />
+          <InfoRow icon="👤" label={t('prospects.detail.name')} value={prospect.contact_name} />
           <InfoRow icon="✉️" label="Email" value={prospect.email} href={prospect.email ? `mailto:${prospect.email}` : null} />
-          <InfoRow icon="📞" label="Téléphone" value={prospect.phone} href={prospect.phone ? `tel:${prospect.phone}` : null} />
+          <InfoRow icon="📞" label={t('prospects.detail.phone')} value={prospect.phone} href={prospect.phone ? `tel:${prospect.phone}` : null} />
           <InfoRow icon="🔗" label="LinkedIn" value={prospect.linkedin} href={prospect.linkedin} />
-          <InfoRow icon="🌍" label="Pays" value={prospect.country} />
-          <InfoRow icon="📌" label="Source" value={prospect.source} />
+          <InfoRow icon="🌍" label={t('prospects.detail.country')} value={prospect.country} />
+          <InfoRow icon="📌" label={t('prospects.detail.source')} value={prospect.source} />
         </div>
 
-        {/* Résumé réunion */}
         {prospect.notes && (
           <div style={{ margin: '16px 0' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-              📋 Résumé / Notes réunion
+              {t('prospects.detail.notes')}
             </div>
             <div style={{
               background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8,
@@ -216,11 +212,10 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
           </div>
         )}
 
-        {/* Prochaine action */}
         {prospect.next_action && (
           <div style={{ margin: '16px 0' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-              ➡️ Prochaine action
+              {t('prospects.detail.nextAction')}
             </div>
             <div style={{
               background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8,
@@ -231,11 +226,10 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
           </div>
         )}
 
-        {/* Teaser */}
         {prospect.teaser && (
           <div style={{ margin: '16px 0' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-              📄 Teaser / Projet
+              {t('prospects.detail.teaser')}
             </div>
             <div style={{
               background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8,
@@ -246,7 +240,6 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
           </div>
         )}
 
-        {/* Documents */}
         <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 16, marginTop: 8 }}>
           <DocumentsSection prospectId={prospect.id} />
         </div>
@@ -254,13 +247,12 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
         <div style={{ height: 16 }} />
       </div>
 
-      {/* Actions */}
       <div style={{ padding: '14px 20px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: 8 }}>
         <button onClick={onEdit} style={{
           flex: 1, padding: '9px', borderRadius: 6, border: 'none',
           background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13,
         }}>
-          ✏️ Modifier
+          ✏️ {t('common.edit')}
         </button>
         {prospect.email && (
           <a href={`mailto:${prospect.email}`} style={{
@@ -283,6 +275,7 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
 }
 
 function EditModal({ prospect, onClose, onSave }) {
+  const { t } = useLang()
   const [form, setForm] = useState(prospect || {
     company: '', contact_name: '', email: '', phone: '', linkedin: '',
     type: 'developer', status: 'to_contact', country: 'FR',
@@ -295,7 +288,7 @@ function EditModal({ prospect, onClose, onSave }) {
       if (prospect?.id) await api.put(`/prospects/${prospect.id}`, form)
       else await api.post('/prospects/', form)
       onSave(form)
-    } catch { alert('Erreur lors de la sauvegarde') }
+    } catch { alert(t('prospects.saveError') || 'Erreur lors de la sauvegarde') }
   }
 
   const input = { width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }
@@ -306,35 +299,35 @@ function EditModal({ prospect, onClose, onSave }) {
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 560, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' }}>
         <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>
-          {prospect?.id ? '✏️ Modifier prospect' : '➕ Nouveau prospect'}
+          {prospect?.id ? t('prospects.modal.editTitle') : t('prospects.modal.newTitle')}
         </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div><label style={{ ...label, marginTop: 0 }}>Société *</label><input style={input} value={form.company} onChange={e => set('company', e.target.value)} /></div>
-          <div><label style={{ ...label, marginTop: 0 }}>Contact</label><input style={input} value={form.contact_name || ''} onChange={e => set('contact_name', e.target.value)} /></div>
+          <div><label style={{ ...label, marginTop: 0 }}>{t('prospects.form.company')}</label><input style={input} value={form.company} onChange={e => set('company', e.target.value)} /></div>
+          <div><label style={{ ...label, marginTop: 0 }}>{t('prospects.form.contact')}</label><input style={input} value={form.contact_name || ''} onChange={e => set('contact_name', e.target.value)} /></div>
           <div><label style={{ ...label, marginTop: 0 }}>Email</label><input style={input} type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} /></div>
-          <div><label style={{ ...label, marginTop: 0 }}>Téléphone</label><input style={input} value={form.phone || ''} onChange={e => set('phone', e.target.value)} /></div>
+          <div><label style={{ ...label, marginTop: 0 }}>{t('prospects.form.phone')}</label><input style={input} value={form.phone || ''} onChange={e => set('phone', e.target.value)} /></div>
           <div>
-            <label style={{ ...label, marginTop: 0 }}>Type</label>
+            <label style={{ ...label, marginTop: 0 }}>{t('prospects.form.type')}</label>
             <select style={input} value={form.type} onChange={e => set('type', e.target.value)}>
-              {TYPE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              {TYPE_VALUES.map(tp => <option key={tp.value} value={tp.value}>{t('type.' + tp.value)}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ ...label, marginTop: 0 }}>Statut</label>
+            <label style={{ ...label, marginTop: 0 }}>{t('prospects.form.status')}</label>
             <select style={input} value={form.status} onChange={e => set('status', e.target.value)}>
-              {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              {STATUS_VALUES.map(s => <option key={s.value} value={s.value}>{t('status.' + s.value)}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ ...label, marginTop: 0 }}>Pays</label>
+            <label style={{ ...label, marginTop: 0 }}>{t('prospects.form.country')}</label>
             <input style={input} value={form.country || ''} onChange={e => set('country', e.target.value)} />
           </div>
           <div>
-            <label style={{ ...label, marginTop: 0 }}>NDA signé</label>
+            <label style={{ ...label, marginTop: 0 }}>{t('prospects.form.ndaSigned')}</label>
             <select style={input} value={form.nda_signed} onChange={e => set('nda_signed', e.target.value)}>
-              <option value="Non">Non</option>
-              <option value="Oui">Oui</option>
+              <option value="Non">{t('common.no')}</option>
+              <option value="Oui">{t('common.yes')}</option>
             </select>
           </div>
         </div>
@@ -342,22 +335,22 @@ function EditModal({ prospect, onClose, onSave }) {
         <label style={label}>LinkedIn</label>
         <input style={input} value={form.linkedin || ''} onChange={e => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." />
 
-        <label style={label}>Résumé réunion / Notes</label>
-        <textarea style={{ ...input, height: 100, resize: 'vertical' }} value={form.notes || ''} onChange={e => set('notes', e.target.value)} placeholder="Ce dont on a parlé, leurs besoins, contexte..." />
+        <label style={label}>{t('prospects.form.notes')}</label>
+        <textarea style={{ ...input, height: 100, resize: 'vertical' }} value={form.notes || ''} onChange={e => set('notes', e.target.value)} placeholder={t('prospects.form.notesPH')} />
 
-        <label style={label}>Prochaine action</label>
-        <input style={input} value={form.next_action || ''} onChange={e => set('next_action', e.target.value)} placeholder="ex: Envoyer teaser projet X avant le 20/06" />
+        <label style={label}>{t('prospects.form.nextAction')}</label>
+        <input style={input} value={form.next_action || ''} onChange={e => set('next_action', e.target.value)} placeholder={t('prospects.form.nextActionPH')} />
 
-        <label style={label}>Teaser / Projet</label>
-        <textarea style={{ ...input, height: 80, resize: 'vertical' }} value={form.teaser || ''} onChange={e => set('teaser', e.target.value)} placeholder="Détails du projet, capacité MW, localisation..." />
+        <label style={label}>{t('prospects.form.teaser')}</label>
+        <textarea style={{ ...input, height: 80, resize: 'vertical' }} value={form.teaser || ''} onChange={e => set('teaser', e.target.value)} placeholder={t('prospects.form.teaserPH')} />
 
-        <label style={label}>Source</label>
-        <input style={input} value={form.source || ''} onChange={e => set('source', e.target.value)} placeholder="ex: LinkedIn, référence, salon..." />
+        <label style={label}>{t('prospects.form.source')}</label>
+        <input style={input} value={form.source || ''} onChange={e => set('source', e.target.value)} placeholder={t('prospects.form.sourcePH')} />
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
-          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>Annuler</button>
+          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>{t('common.cancel')}</button>
           <button onClick={handleSave} style={{ padding: '9px 18px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>
-            💾 Sauvegarder
+            💾 {t('common.save')}
           </button>
         </div>
       </div>
@@ -366,6 +359,7 @@ function EditModal({ prospect, onClose, onSave }) {
 }
 
 export default function Prospects() {
+  const { t } = useLang()
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
@@ -389,7 +383,7 @@ export default function Prospects() {
   useEffect(() => { load() }, [search, filterStatus, filterType])
 
   const handleDelete = async () => {
-    if (!confirm(`Supprimer ${selected.company} ?`)) return
+    if (!confirm(`${t('common.delete')} ${selected.company} ?`)) return
     await api.delete(`/prospects/${selected.id}`)
     setSelected(null)
     load()
@@ -404,56 +398,52 @@ export default function Prospects() {
   return (
     <div style={{ display: 'flex', gap: 16, height: 'calc(100vh - 64px)' }}>
 
-      {/* Liste gauche */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexShrink: 0 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>🤝 Prospects</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>{t('prospects.title')}</h1>
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-              {data.length} contacts · {inDiscussion} en discussion · {ndaCount} NDA signés
+              {data.length} contacts · {inDiscussion} {t('status.in_discussion').toLowerCase()} · {ndaCount} NDA {t('status.nda_signed').toLowerCase()}
             </div>
           </div>
           <button onClick={() => setEditing({})} style={{ padding: '9px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-            + Nouveau
+            {t('common.new')}
           </button>
         </div>
 
-        {/* Filtres */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexShrink: 0, flexWrap: 'wrap' }}>
-          <input placeholder="🔍 Rechercher..." value={search} onChange={e => setSearch(e.target.value)}
+          <input placeholder={t('common.search')} value={search} onChange={e => setSearch(e.target.value)}
             style={{ flex: 1, minWidth: 160, padding: '7px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13 }} />
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             style={{ padding: '7px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13 }}>
-            <option value="">Tous statuts</option>
-            {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            <option value="">{t('prospects.allStatuses')}</option>
+            {STATUS_VALUES.map(s => <option key={s.value} value={s.value}>{t('status.' + s.value)}</option>)}
           </select>
           <select value={filterType} onChange={e => setFilterType(e.target.value)}
             style={{ padding: '7px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13 }}>
-            <option value="">Tous types</option>
-            {TYPE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <option value="">{t('prospects.allTypes')}</option>
+            {TYPE_VALUES.map(tp => <option key={tp.value} value={tp.value}>{t('type.' + tp.value)}</option>)}
           </select>
         </div>
 
-        {/* Tableau */}
         <div style={{ flex: 1, overflowY: 'auto', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8 }}>
           {loading ? (
-            <div style={{ padding: 60, textAlign: 'center', color: '#9ca3af' }}>Chargement...</div>
+            <div style={{ padding: 60, textAlign: 'center', color: '#9ca3af' }}>{t('common.loading')}</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ background: '#f9fafb', position: 'sticky', top: 0, zIndex: 1 }}>
                 <tr>
-                  <th style={th}>Société</th>
-                  <th style={th}>Contact</th>
-                  <th style={th}>Statut</th>
-                  <th style={th}>NDA</th>
-                  <th style={th}>Prochaine action</th>
+                  <th style={th}>{t('prospects.col.company')}</th>
+                  <th style={th}>{t('prospects.col.contact')}</th>
+                  <th style={th}>{t('prospects.col.status')}</th>
+                  <th style={th}>{t('prospects.col.nda')}</th>
+                  <th style={th}>{t('prospects.col.nextAction')}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.length === 0 ? (
-                  <tr><td colSpan={5} style={{ ...td, textAlign: 'center', color: '#9ca3af', padding: 40 }}>Aucun prospect</td></tr>
+                  <tr><td colSpan={5} style={{ ...td, textAlign: 'center', color: '#9ca3af', padding: 40 }}>{t('prospects.noData')}</td></tr>
                 ) : data.map(p => (
                   <tr key={p.id}
                     onClick={() => setSelected(p)}
@@ -482,7 +472,6 @@ export default function Prospects() {
         </div>
       </div>
 
-      {/* Fiche détail droite */}
       {selected && (
         <div style={{
           width: 340, flexShrink: 0, background: '#fff', border: '1px solid #e5e7eb',
@@ -497,7 +486,6 @@ export default function Prospects() {
         </div>
       )}
 
-      {/* Modal édition */}
       {editing !== null && (
         <EditModal
           prospect={editing.id ? editing : null}

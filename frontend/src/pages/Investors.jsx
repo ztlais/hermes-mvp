@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import { useLang } from '../context/LanguageContext'
 
 const DOC_TYPES = [
   { value: 'nda',           label: 'NDA',           color: '#7c3aed', bg: '#ede9fe' },
@@ -16,6 +17,7 @@ function DocStyle(type) {
 }
 
 function DocumentsSection({ investorId }) {
+  const { t } = useLang()
   const [docs, setDocs] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', url: '', doc_type: 'nda' })
@@ -42,12 +44,12 @@ function DocumentsSection({ investorId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          📁 Documents
+          {t('common.documents')}
         </div>
         <button onClick={() => setShowForm(!showForm)} style={{
           padding: '3px 10px', borderRadius: 5, border: '1px solid #d1d5db',
           background: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, color: '#374151',
-        }}>+ Ajouter</button>
+        }}>{t('docs.add')}</button>
       </div>
 
       {docs.length > 0 && (
@@ -74,19 +76,19 @@ function DocumentsSection({ investorId }) {
       )}
 
       {docs.length === 0 && !showForm && (
-        <div style={{ fontSize: 12, color: '#d1d5db', fontStyle: 'italic' }}>Aucun document lié</div>
+        <div style={{ fontSize: 12, color: '#d1d5db', fontStyle: 'italic' }}>{t('common.noDocuments')}</div>
       )}
 
       {showForm && (
         <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, marginTop: 8 }}>
           <select value={form.doc_type} onChange={e => setForm(f => ({ ...f, doc_type: e.target.value }))} style={inp}>
-            {DOC_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            {DOC_TYPES.map(tp => <option key={tp.value} value={tp.value}>{tp.label}</option>)}
           </select>
           <input style={inp} placeholder="Nom (ex: NDA Electron Green)" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-          <input style={{ ...inp, marginBottom: 10 }} placeholder="Lien Google Drive ou URL" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
+          <input style={{ ...inp, marginBottom: 10 }} placeholder={t('docs.urlPH')} value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowForm(false)} style={{ padding: '5px 12px', borderRadius: 5, border: '1px solid #d1d5db', background: '#fff', fontSize: 12, cursor: 'pointer' }}>Annuler</button>
-            <button onClick={handleAdd} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: '#2563eb', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>Ajouter</button>
+            <button onClick={() => setShowForm(false)} style={{ padding: '5px 12px', borderRadius: 5, border: '1px solid #d1d5db', background: '#fff', fontSize: 12, cursor: 'pointer' }}>{t('common.cancel')}</button>
+            <button onClick={handleAdd} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: '#2563eb', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>{t('common.add')}</button>
           </div>
         </div>
       )}
@@ -94,17 +96,8 @@ function DocumentsSection({ investorId }) {
   )
 }
 
-const TECHNOLOGIES = [
-  { value: 'solar',    label: '☀️ Solaire PV' },
-  { value: 'wind',     label: '💨 Éolien terrestre' },
-  { value: 'offshore', label: '🌊 Éolien offshore' },
-  { value: 'bess',     label: '🔋 BESS / Stockage' },
-  { value: 'hydro',    label: '💧 Hydraulique' },
-  { value: 'biomass',  label: '🌿 Biomasse' },
-  { value: 'hybrid',   label: '⚡ Hybride' },
-]
-
-const COUNTRIES = [
+const TECH_VALUES = ['solar','wind','offshore','bess','hydro','biomass','hybrid']
+const COUNTRY_OPTIONS = [
   { value: 'FR', label: '🇫🇷 France' },
   { value: 'BE', label: '🇧🇪 Belgique' },
   { value: 'ES', label: '🇪🇸 Espagne' },
@@ -114,37 +107,16 @@ const COUNTRIES = [
   { value: 'DE', label: '🇩🇪 Allemagne' },
   { value: 'PT', label: '🇵🇹 Portugal' },
 ]
+const STAGE_VALUES = ['development','permitting','rtb','construction','operational']
+const DEAL_TYPE_VALUES = ['acquisition','co_development','financing','equity','ppa']
+const INVESTOR_TYPE_VALUES = ['fund','family_office','ipp','corporate','other']
 
-const DEAL_STAGES = [
-  { value: 'development', label: '🔧 Développement' },
-  { value: 'permitting',  label: '📋 Permitting' },
-  { value: 'rtb',         label: '🟢 RTB (Ready to Build)' },
-  { value: 'construction',label: '🏗️ Construction' },
-  { value: 'operational', label: '⚡ Opérationnel' },
-]
-
-const DEAL_TYPES = [
-  { value: 'acquisition',     label: '🤝 Acquisition' },
-  { value: 'co_development',  label: '🔗 Co-développement' },
-  { value: 'financing',       label: '💰 Financement' },
-  { value: 'equity',          label: '📈 Prise de participation' },
-  { value: 'ppa',             label: '📄 PPA' },
-]
-
-const INVESTOR_TYPES = [
-  { value: 'fund',          label: 'Fonds d\'investissement' },
-  { value: 'family_office', label: 'Family Office' },
-  { value: 'ipp',           label: 'IPP' },
-  { value: 'corporate',     label: 'Corporate / Industriel' },
-  { value: 'other',         label: 'Autre' },
-]
-
-const STATUS_OPTIONS = [
-  { value: 'to_contact',    label: 'À contacter',    color: '#6b7280', bg: '#f3f4f6' },
-  { value: 'contacted',     label: 'Contacté',       color: '#1e40af', bg: '#dbeafe' },
-  { value: 'in_discussion', label: 'En discussion',  color: '#92400e', bg: '#fef3c7' },
-  { value: 'active',        label: 'Actif',          color: '#065f46', bg: '#d1fae5' },
-  { value: 'inactive',      label: 'Inactif',        color: '#4b5563', bg: '#f3f4f6' },
+const STATUS_VALUES = [
+  { value: 'to_contact',    color: '#6b7280', bg: '#f3f4f6' },
+  { value: 'contacted',     color: '#1e40af', bg: '#dbeafe' },
+  { value: 'in_discussion', color: '#92400e', bg: '#fef3c7' },
+  { value: 'active',        color: '#065f46', bg: '#d1fae5' },
+  { value: 'inactive',      color: '#4b5563', bg: '#f3f4f6' },
 ]
 
 function CheckGroup({ options, selected = [], onChange, cols = 2 }) {
@@ -171,19 +143,20 @@ function CheckGroup({ options, selected = [], onChange, cols = 2 }) {
 }
 
 function StatusBadge({ value }) {
-  const s = STATUS_OPTIONS.find(o => o.value === value) || STATUS_OPTIONS[0]
+  const { t } = useLang()
+  const s = STATUS_VALUES.find(o => o.value === value) || STATUS_VALUES[0]
   return (
     <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 600, background: s.bg, color: s.color }}>
-      {s.label}
+      {t('status.' + value)}
     </span>
   )
 }
 
 function TypeBadge({ value }) {
-  const t = INVESTOR_TYPES.find(o => o.value === value)
+  const { t } = useLang()
   return (
     <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 600, background: '#ede9fe', color: '#5b21b6' }}>
-      {t?.label || value}
+      {t('type.' + value) || value}
     </span>
   )
 }
@@ -192,6 +165,12 @@ const toArr = (str) => str ? str.split(',').filter(Boolean) : []
 const toStr = (arr) => arr.join(',')
 
 function InvestorModal({ investor, onClose, onSave }) {
+  const { t } = useLang()
+
+  const TECHNOLOGIES = TECH_VALUES.map(v => ({ value: v, label: t('tech.' + v) }))
+  const DEAL_STAGES = STAGE_VALUES.map(v => ({ value: v, label: t('stage.' + v) }))
+  const DEAL_TYPES = DEAL_TYPE_VALUES.map(v => ({ value: v, label: t('deal.' + v) }))
+
   const [form, setForm] = useState({
     company: '', contact_name: '', email: '', phone: '', linkedin: '',
     type: 'fund', status: 'to_contact', country: '',
@@ -227,7 +206,7 @@ function InvestorModal({ investor, onClose, onSave }) {
   }
 
   const input = { width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }
-  const label = { display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, marginTop: 16, textTransform: 'uppercase', letterSpacing: 0.4 }
+  const lbl = { display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, marginTop: 16, textTransform: 'uppercase', letterSpacing: 0.4 }
   const section = { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 12 }
 
   return (
@@ -236,105 +215,97 @@ function InvestorModal({ investor, onClose, onSave }) {
       <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' }}>
 
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: '#1f2937' }}>
-          {investor?.id ? '✏️ Modifier investisseur' : '➕ Nouvel investisseur'}
+          {investor?.id ? t('investors.modal.editTitle') : t('investors.modal.newTitle')}
         </h2>
-        <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>Les critères structurés améliorent la précision du matching</p>
+        <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>{t('investors.modal.matchingHint')}</p>
 
-        {/* Infos de base */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>Informations générales</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.general')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Société *</label>
+              <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.company')}</label>
               <input style={input} value={form.company} onChange={e => set('company', e.target.value)} placeholder="ex: Ardian Infrastructure" />
             </div>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Type</label>
+              <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.type')}</label>
               <select style={input} value={form.type} onChange={e => set('type', e.target.value)}>
-                {INVESTOR_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                {INVESTOR_TYPE_VALUES.map(v => <option key={v} value={v}>{t('type.' + v)}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Contact</label>
+              <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.contact')}</label>
               <input style={input} value={form.contact_name || ''} onChange={e => set('contact_name', e.target.value)} placeholder="Prénom Nom" />
             </div>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Email</label>
+              <label style={{ ...lbl, marginTop: 0 }}>Email</label>
               <input style={input} type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} />
             </div>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Téléphone</label>
+              <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.phone')}</label>
               <input style={input} value={form.phone || ''} onChange={e => set('phone', e.target.value)} />
             </div>
             <div>
-              <label style={{ ...label, marginTop: 0 }}>Statut</label>
+              <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.status')}</label>
               <select style={input} value={form.status} onChange={e => set('status', e.target.value)}>
-                {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {STATUS_VALUES.map(s => <option key={s.value} value={s.value}>{t('status.' + s.value)}</option>)}
               </select>
             </div>
           </div>
           <div style={{ marginTop: 10 }}>
-            <label style={{ ...label, marginTop: 0 }}>LinkedIn</label>
+            <label style={{ ...lbl, marginTop: 0 }}>LinkedIn</label>
             <input style={input} value={form.linkedin || ''} onChange={e => set('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." />
           </div>
         </div>
 
-        {/* Technologies */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>⚡ Technologies recherchées</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.technologies')}</div>
           <CheckGroup options={TECHNOLOGIES} selected={form.technologies} onChange={v => set('technologies', v)} cols={3} />
         </div>
 
-        {/* Pays cibles */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>🌍 Pays cibles</div>
-          <CheckGroup options={COUNTRIES} selected={form.target_countries} onChange={v => set('target_countries', v)} cols={4} />
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.countries')}</div>
+          <CheckGroup options={COUNTRY_OPTIONS} selected={form.target_countries} onChange={v => set('target_countries', v)} cols={4} />
         </div>
 
-        {/* Stade de projet */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>📊 Stade de projet accepté</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.stages')}</div>
           <CheckGroup options={DEAL_STAGES} selected={form.deal_stages} onChange={v => set('deal_stages', v)} cols={3} />
         </div>
 
-        {/* Type de deal */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>🤝 Type de deal</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.dealTypes')}</div>
           <CheckGroup options={DEAL_TYPES} selected={form.deal_types} onChange={v => set('deal_types', v)} cols={3} />
         </div>
 
-        {/* Ticket */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>💰 Mandat & ticket</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.ticket')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
             {[['Min MW', 'min_mw'], ['Max MW', 'max_mw'], ['Min M€', 'min_ticket'], ['Max M€', 'max_ticket']].map(([l, k]) => (
               <div key={k}>
-                <label style={{ ...label, marginTop: 0 }}>{l}</label>
+                <label style={{ ...lbl, marginTop: 0 }}>{l}</label>
                 <input style={input} type="number" value={form[k] || ''} onChange={e => set(k, e.target.value)} placeholder="0" />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Notes */}
         <div style={section}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>📝 Notes & prochaine action</div>
-          <label style={{ ...label, marginTop: 0 }}>Critères additionnels</label>
-          <textarea style={{ ...input, height: 70, resize: 'vertical' }} value={form.criteria || ''} onChange={e => set('criteria', e.target.value)} placeholder="Contraintes spécifiques, IRR minimum, zone géo précise..." />
-          <label style={label}>Notes internes</label>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>{t('investors.section.notes')}</div>
+          <label style={{ ...lbl, marginTop: 0 }}>{t('investors.form.criteria')}</label>
+          <textarea style={{ ...input, height: 70, resize: 'vertical' }} value={form.criteria || ''} onChange={e => set('criteria', e.target.value)} placeholder={t('investors.form.criteriaPH')} />
+          <label style={lbl}>{t('investors.form.notes')}</label>
           <textarea style={{ ...input, height: 60, resize: 'vertical' }} value={form.notes || ''} onChange={e => set('notes', e.target.value)} />
-          <label style={label}>Prochaine action</label>
-          <input style={input} value={form.next_action || ''} onChange={e => set('next_action', e.target.value)} placeholder="ex: Envoyer teaser projet X avant le 20/06" />
+          <label style={lbl}>{t('investors.form.nextAction')}</label>
+          <input style={input} value={form.next_action || ''} onChange={e => set('next_action', e.target.value)} placeholder={t('investors.form.nextActionPH')} />
         </div>
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
-          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14 }}>Annuler</button>
+          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14 }}>{t('common.cancel')}</button>
           <button onClick={handleSave} style={{ padding: '10px 20px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
-            💾 Sauvegarder
+            💾 {t('common.save')}
           </button>
         </div>
 
-        {/* Documents */}
         {investor?.id && (
           <div style={{ marginTop: 20, padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8 }}>
             <DocumentsSection investorId={investor.id} />
@@ -346,13 +317,10 @@ function InvestorModal({ investor, onClose, onSave }) {
 }
 
 function InvestorCard({ inv, onClick }) {
+  const { t } = useLang()
   const techs = toArr(inv.technologies)
   const countries = toArr(inv.target_countries)
   const stages = toArr(inv.deal_stages)
-
-  const techMap = Object.fromEntries(TECHNOLOGIES.map(t => [t.value, t.label]))
-  const countryMap = Object.fromEntries(COUNTRIES.map(c => [c.value, c.label]))
-  const stageMap = Object.fromEntries(DEAL_STAGES.map(s => [s.value, s.label]))
 
   const completeness = [
     techs.length > 0,
@@ -381,42 +349,41 @@ function InvestorCard({ inv, onClick }) {
         </div>
       </div>
 
-      {/* Technologies */}
       {techs.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-          {techs.map(t => (
-            <span key={t} style={{ padding: '2px 8px', background: '#fef3c7', color: '#92400e', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
-              {techMap[t] || t}
+          {techs.map(tech => (
+            <span key={tech} style={{ padding: '2px 8px', background: '#fef3c7', color: '#92400e', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
+              {t('tech.' + tech) || tech}
             </span>
           ))}
         </div>
       )}
 
-      {/* Pays */}
       {countries.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-          {countries.map(c => (
-            <span key={c} style={{ padding: '2px 8px', background: '#dbeafe', color: '#1e40af', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
-              {countryMap[c] || c}
-            </span>
-          ))}
+          {countries.map(c => {
+            const co = COUNTRY_OPTIONS.find(o => o.value === c)
+            return (
+              <span key={c} style={{ padding: '2px 8px', background: '#dbeafe', color: '#1e40af', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
+                {co?.label || c}
+              </span>
+            )
+          })}
         </div>
       )}
 
-      {/* MW + stades */}
       <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#6b7280', marginTop: 8 }}>
         {(inv.min_mw || inv.max_mw) && (
           <span>⚡ {inv.min_mw || '?'}–{inv.max_mw || '?'} MW</span>
         )}
         {stages.length > 0 && (
-          <span>📊 {stages.map(s => stageMap[s]?.split(' ')[1] || s).join(', ')}</span>
+          <span>📊 {stages.map(s => t('stage.' + s)?.split(' ')[1] || s).join(', ')}</span>
         )}
       </div>
 
-      {/* Complétude du profil */}
       <div style={{ marginTop: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ca3af', marginBottom: 3 }}>
-          <span>Profil complété</span>
+          <span>{t('investors.profileComplete')}</span>
           <span>{completeness * 20}%</span>
         </div>
         <div style={{ height: 4, background: '#f3f4f6', borderRadius: 2 }}>
@@ -428,6 +395,7 @@ function InvestorCard({ inv, onClick }) {
 }
 
 export default function Investors() {
+  const { t } = useLang()
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
@@ -448,7 +416,7 @@ export default function Investors() {
   useEffect(() => { load() }, [search, filterStatus, filterType])
 
   const handleDelete = async (id) => {
-    if (!confirm('Supprimer cet investisseur ?')) return
+    if (!confirm(t('investors.deleteConfirm') || 'Supprimer cet investisseur ?')) return
     await api.delete(`/investors/${id}`)
     setModal(null)
     load()
@@ -457,13 +425,18 @@ export default function Investors() {
   const activeCount = data.filter(i => i.status === 'active').length
   const withTechCount = data.filter(i => i.technologies).length
 
+  const TABLE_HEADERS = [
+    t('investors.col.company'), t('investors.col.type'), t('investors.col.status'),
+    t('investors.col.technologies'), t('investors.col.countries'), t('investors.col.mw'), t('investors.col.profile'),
+  ]
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>🏦 Investisseurs</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>{t('investors.title')}</h1>
           <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-            {data.length} investisseurs · {activeCount} actifs · {withTechCount} avec critères structurés
+            {data.length} {t('nav.investors').toLowerCase()} · {activeCount} {t('status.active').toLowerCase()} · {withTechCount} {t('investors.modal.matchingHint').split(' ').slice(0, 2).join(' ')}...
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -475,38 +448,37 @@ export default function Investors() {
                 color: view === v ? '#1f2937' : '#6b7280',
                 boxShadow: view === v ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               }}>
-                {v === 'grid' ? '⊞ Grille' : '☰ Tableau'}
+                {v === 'grid' ? t('investors.viewGrid') : t('investors.viewTable')}
               </button>
             ))}
           </div>
           <button onClick={() => setModal({})} style={{ padding: '9px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
-            + Nouvel investisseur
+            {t('investors.new')}
           </button>
         </div>
       </div>
 
-      {/* Filtres */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-        <input placeholder="🔍 Rechercher un investisseur..." value={search} onChange={e => setSearch(e.target.value)}
+        <input placeholder={`🔍 ${t('common.search').replace('🔍 ', '')}`} value={search} onChange={e => setSearch(e.target.value)}
           style={{ flex: 1, minWidth: 200, padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }} />
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
           style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }}>
-          <option value="">Tous les statuts</option>
-          {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          <option value="">{t('investors.allStatuses')}</option>
+          {STATUS_VALUES.map(s => <option key={s.value} value={s.value}>{t('status.' + s.value)}</option>)}
         </select>
         <select value={filterType} onChange={e => setFilterType(e.target.value)}
           style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }}>
-          <option value="">Tous les types</option>
-          {INVESTOR_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          <option value="">{t('investors.allTypes')}</option>
+          {INVESTOR_TYPE_VALUES.map(v => <option key={v} value={v}>{t('type.' + v)}</option>)}
         </select>
       </div>
 
       {loading ? (
-        <div style={{ padding: 60, textAlign: 'center', color: '#6b7280' }}>Chargement...</div>
+        <div style={{ padding: 60, textAlign: 'center', color: '#6b7280' }}>{t('common.loading')}</div>
       ) : view === 'grid' ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
           {data.length === 0 ? (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 60, color: '#9ca3af' }}>Aucun investisseur</div>
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 60, color: '#9ca3af' }}>{t('investors.noData')}</div>
           ) : data.map(inv => (
             <InvestorCard key={inv.id} inv={inv} onClick={() => setModal(inv)} />
           ))}
@@ -516,7 +488,7 @@ export default function Investors() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ background: '#f9fafb' }}>
               <tr>
-                {['Société', 'Type', 'Statut', 'Technologies', 'Pays', 'MW', 'Profil'].map(h => (
+                {TABLE_HEADERS.map(h => (
                   <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb' }}>{h}</th>
                 ))}
               </tr>
@@ -533,7 +505,7 @@ export default function Investors() {
                     <td style={{ padding: '12px', fontWeight: 600 }}>{inv.company}</td>
                     <td style={{ padding: '12px' }}><TypeBadge value={inv.type} /></td>
                     <td style={{ padding: '12px' }}><StatusBadge value={inv.status} /></td>
-                    <td style={{ padding: '12px', fontSize: 12 }}>{techs.join(', ') || '—'}</td>
+                    <td style={{ padding: '12px', fontSize: 12 }}>{techs.map(t2 => t('tech.' + t2) || t2).join(', ') || '—'}</td>
                     <td style={{ padding: '12px', fontSize: 12 }}>{countries.join(', ') || '—'}</td>
                     <td style={{ padding: '12px', fontSize: 12 }}>{inv.min_mw || inv.max_mw ? `${inv.min_mw || '?'}–${inv.max_mw || '?'}` : '—'}</td>
                     <td style={{ padding: '12px' }}>

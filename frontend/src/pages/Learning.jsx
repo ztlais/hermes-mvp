@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
+import { useLang } from '../context/LanguageContext'
 
 const CATEGORIES = ['vocabulary','concept','regulation','market','finance','technical','other']
 
 export default function Learning() {
+  const { t, lang } = useLang()
   const [data, setData] = useState([])
   const [quiz, setQuiz] = useState(null)
   const [quizAnswers, setQuizAnswers] = useState({})
@@ -30,7 +32,7 @@ export default function Learning() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Supprimer ?')) return
+    if (!confirm(t('learning.deleteConfirm') || 'Supprimer ?')) return
     await api.delete(`/learning/${id}`)
     load()
   }
@@ -50,35 +52,35 @@ export default function Learning() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>📚 Learning</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1f2937' }}>{t('learning.title')}</h1>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={startQuiz} style={{ padding: '8px 16px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
-            🧠 Quiz
+            {t('learning.quiz')}
           </button>
           <button onClick={() => setShowAdd(!showAdd)} style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
-            + Ajouter
+            {t('learning.add')}
           </button>
         </div>
       </div>
 
       {showAdd && (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, marginBottom: 20 }}>
-          <h3 style={{ fontWeight: 600, marginBottom: 12 }}>Nouveau terme</h3>
+          <h3 style={{ fontWeight: 600, marginBottom: 12 }}>{t('learning.newTerm')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div><label style={label}>Terme *</label><input style={input} value={form.term} onChange={e => setForm(f => ({ ...f, term: e.target.value }))} /></div>
-            <div><label style={label}>Catégorie</label>
+            <div><label style={label}>{t('learning.form.term')}</label><input style={input} value={form.term} onChange={e => setForm(f => ({ ...f, term: e.target.value }))} /></div>
+            <div><label style={label}>{t('learning.form.category')}</label>
               <select style={input} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
-          <label style={label}>Définition *</label>
+          <label style={label}>{t('learning.form.definition')}</label>
           <textarea style={{ ...input, height: 80, resize: 'vertical' }} value={form.definition} onChange={e => setForm(f => ({ ...f, definition: e.target.value }))} />
-          <label style={label}>Exemple</label>
+          <label style={label}>{t('learning.form.example')}</label>
           <input style={input} value={form.example} onChange={e => setForm(f => ({ ...f, example: e.target.value }))} />
           <div style={{ display: 'flex', gap: 10, marginTop: 12, justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowAdd(false)} style={{ padding: '8px 16px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>Annuler</button>
-            <button onClick={handleAdd} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>Sauvegarder</button>
+            <button onClick={() => setShowAdd(false)} style={{ padding: '8px 16px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>{t('common.cancel')}</button>
+            <button onClick={handleAdd} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{t('common.save')}</button>
           </div>
         </div>
       )}
@@ -86,23 +88,25 @@ export default function Learning() {
       {quiz && (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 24, marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ fontWeight: 700, fontSize: 16 }}>🧠 Quiz — {quiz.length} questions</h3>
-            <button onClick={() => setQuiz(null)} style={{ padding: '4px 10px', border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12 }}>Fermer</button>
+            <h3 style={{ fontWeight: 700, fontSize: 16 }}>🧠 {t('learning.quiz')} — {quiz.length} questions</h3>
+            <button onClick={() => setQuiz(null)} style={{ padding: '4px 10px', border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12 }}>{t('learning.quiz.close')}</button>
           </div>
           {quiz.map((q, i) => (
             <div key={q.id} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < quiz.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-              <div style={{ fontWeight: 600, marginBottom: 10, color: '#1f2937' }}>Q{i + 1}. Que signifie "{q.term}" ?</div>
+              <div style={{ fontWeight: 600, marginBottom: 10, color: '#1f2937' }}>
+                Q{i + 1}. {lang === 'en' ? `What does "${q.term}" mean?` : `Que signifie "${q.term}" ?`}
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {q.choices.map((c, j) => {
-                  const selected = quizAnswers[q.id] === c
+                  const sel = quizAnswers[q.id] === c
                   const correct = quizDone && c === q.correct_definition
-                  const wrong = quizDone && selected && c !== q.correct_definition
+                  const wrong = quizDone && sel && c !== q.correct_definition
                   return (
                     <button key={j} onClick={() => !quizDone && setQuizAnswers(a => ({ ...a, [q.id]: c }))}
                       style={{
                         padding: '10px 14px', borderRadius: 6, textAlign: 'left', cursor: quizDone ? 'default' : 'pointer',
-                        border: `2px solid ${correct ? '#16a34a' : wrong ? '#dc2626' : selected ? '#2563eb' : '#e5e7eb'}`,
-                        background: correct ? '#d1fae5' : wrong ? '#fee2e2' : selected ? '#eff6ff' : '#fff',
+                        border: `2px solid ${correct ? '#16a34a' : wrong ? '#dc2626' : sel ? '#2563eb' : '#e5e7eb'}`,
+                        background: correct ? '#d1fae5' : wrong ? '#fee2e2' : sel ? '#eff6ff' : '#fff',
                         color: '#1f2937', fontSize: 13,
                       }}>
                       {c}
@@ -115,22 +119,22 @@ export default function Learning() {
           {!quizDone ? (
             <button onClick={() => setQuizDone(true)} disabled={Object.keys(quizAnswers).length < quiz.length}
               style={{ padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer', opacity: Object.keys(quizAnswers).length < quiz.length ? 0.5 : 1 }}>
-              Valider les réponses
+              {t('learning.quiz.validate')}
             </button>
           ) : (
             <div style={{ padding: 16, background: score === quiz.length ? '#d1fae5' : '#fef3c7', borderRadius: 8, fontWeight: 600, fontSize: 16, textAlign: 'center' }}>
-              {score}/{quiz.length} bonnes réponses {score === quiz.length ? '🎉' : '💪'}
+              {score}/{quiz.length} {score === quiz.length ? '🎉' : '💪'}
             </div>
           )}
         </div>
       )}
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <input placeholder="🔍 Rechercher..." value={search} onChange={e => setSearch(e.target.value)}
+        <input placeholder={t('common.search')} value={search} onChange={e => setSearch(e.target.value)}
           style={{ flex: 1, padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }} />
         <select value={category} onChange={e => setCategory(e.target.value)}
           style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 14 }}>
-          <option value="">Toutes catégories</option>
+          <option value="">{t('learning.allCategories')}</option>
           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>

@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from database import get_db
-from models.user import User
-from auth import verify_password, create_token, get_current_user
+from models.user import User, UserRole
+from auth import verify_password, create_token, get_current_user, hash_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -38,3 +38,25 @@ def me(current_user: User = Depends(get_current_user)):
         "full_name": current_user.full_name,
         "role": current_user.role.value,
     }
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != UserRole.admin:
+        raise HTTPException(status_code=403, detail="Seuls les administrateurs peuvent changer leur mot de passe")
+    if not verify_password(data.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le nouveau mot de passe doit faire au moins 6 caractères")
+    current_user.password_hash = hash_password(data.new_password)
+    db.commit()
+    return {"changed": True, "msg": "Mot de passe mis à jour ✅"}

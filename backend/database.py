@@ -21,5 +21,5 @@ def get_db():
 
 
 def init_db():
-    from models import prospect, investor, project, template, learning, scouting
+    from models import prospect, investor, project, template, learning, scouting, opportunity, meeting_prep
     Base.metadata.create_all(bind=engine)
