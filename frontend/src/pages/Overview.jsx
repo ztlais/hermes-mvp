@@ -56,6 +56,8 @@ const SCOUTING_STATUSES = [
   { key: 'converted', color: '#34d399' },
   { key: 'no_response', color: '#fb923c' },
   { key: 'not_interested', color: '#f87171' },
+  { key: 'premiere_connexion', color: '#1e40af' },
+  { key: 'deuxieme_connexion', color: '#5b21b6' },
 ]
 const OPP_TYPE_COLORS = {
   financement: '#2563eb', levee: '#7c3aed', co_dev: '#0891b2',
@@ -318,6 +320,7 @@ export default function Overview() {
         // Editable state
         editTalkingPoints: prepData.prep?.talking_points || [],
         editQuestions: prepData.prep?.questions || [],
+        editChecklist: (prepData.prep?.checklist || []).map(c => ({ ...c })),
         editNextSteps: prepData.prep?.next_steps || [],
         editPersonalNotes: prepData.prep?.personal_notes || '',
         prepId: prepData.prep?.id,
@@ -361,6 +364,7 @@ export default function Overview() {
         data: prepData,
         editTalkingPoints: prepData.prep?.talking_points || [],
         editQuestions: prepData.prep?.questions || [],
+        editChecklist: (prepData.prep?.checklist || []).map(c => ({ ...c })),
         editNextSteps: prepData.prep?.next_steps || [],
         editPersonalNotes: prepData.prep?.personal_notes || '',
         hasChanges: false,
@@ -562,6 +566,169 @@ function PrepPanel({ prep, onClose, onSave, onRegenerate, setPrep, t }) {
                       • {o.title} — {o.size_eur ? `${o.size_eur}M€` : ''}{o.size_mw ? ` | ${o.size_mw} MW` : ''} ({o.status})
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Matching opportunities from BDD */}
+              {prep.data.matching_opportunities?.length > 0 && (
+                <div style={{ background: '#eff6ff', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#1e40af' }}>
+                  <strong>🔍 Opportunités BDD qui matchent</strong>
+                  {prep.data.matching_opportunities.map((o, i) => (
+                    <div key={i} style={{ marginTop: 4 }}>
+                      • {o.title}{o.size_mw ? ` — ${o.size_mw} MW` : ''}{o.country ? ` (${o.country})` : ''}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Matching projects from BDD */}
+              {prep.data.matching_projects?.length > 0 && (
+                <div style={{ background: '#f5f3ff', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#5b21b6' }}>
+                  <strong>📋 Projets BDD qui matchent</strong>
+
+                  {(() => {
+                    const projects = prep.data.matching_projects;
+
+                    // Summary by stage
+                    const stageSummary = {};
+                    const stageLabels = {'development': 'Développement', 'permitting': 'Permis', 'ready_to_build': 'RTB', 'construction': 'Construction', 'operational': 'Exploitation'};
+                    projects.forEach(p => {
+                      const s = stageLabels[p.stage] || p.stage;
+                      if (!stageSummary[s]) stageSummary[s] = { count: 0, mw: 0 };
+                      stageSummary[s].count++;
+                      stageSummary[s].mw += p.capacity_mw || 0;
+                    });
+
+                    // Group by clean type
+                    const groups = {};
+                    const getLabel = (p) => {
+                      const raw = (p.technology_detail || p.technology || '').toLowerCase();
+                      if (raw.includes('agripv')) return 'AgriPV';
+                      if (raw.includes('sol')) return 'Solaire au sol';
+                      if (raw.includes('eolien')) return 'Éolien';
+                      if (raw.includes('bess')) return 'Stockage';
+                      return p.technology_detail || p.technology || 'Autre';
+                    };
+                    projects.forEach(p => {
+                      const l = getLabel(p);
+                      if (!groups[l]) groups[l] = [];
+                      groups[l].push(p);
+                    });
+
+                    return (
+                      <>
+                        {/* Stage summary */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, marginBottom: 10 }}>
+                          {Object.entries(stageSummary).map(([stage, info]) => (
+                            <div key={stage} style={{
+                              background: '#ede9fe', borderRadius: 6, padding: '4px 10px',
+                              fontSize: 11, color: '#5b21b6', fontWeight: 600,
+                            }}>
+                              {stage}: {info.count} projets ({Math.round(info.mw)} MW)
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Detail by type */}
+                        {Object.entries(groups).map(([type, projs]) => (
+                          <div key={type} style={{ marginTop: 8 }}>
+                            <div style={{ fontWeight: 600, color: '#7c3aed', marginBottom: 3 }}>
+                              {type} — {projs.reduce((s, p) => s + (p.capacity_mw || 0), 0)} MW ({projs.length} projets)
+                            </div>
+                            {projs.map((p, i) => {
+                              const stageLabel = stageLabels[p.stage] || p.stage;
+                              const isOpen = prep.expandedProject === (type + '_' + i);
+                              return (
+                              <div key={i}>
+                                <div
+                                  onClick={() => setPrep({ ...prep, expandedProject: isOpen ? null : type + '_' + i })}
+                                  style={{
+                                    marginTop: 2, padding: '4px 8px', cursor: 'pointer', borderRadius: 4,
+                                    background: isOpen ? '#f0e6ff' : 'transparent',
+                                  }}
+                                >
+                                  • <strong>{p.name}</strong> — {p.capacity_mw} MW ({stageLabel}){p.region ? ` — ${p.region}` : p.department ? ` — ${p.department}` : ''}
+                                </div>
+                                {isOpen && (
+                                  <div style={{
+                                    marginLeft: 12, marginTop: 4, marginBottom: 6, padding: 8,
+                                    background: '#faf5ff', borderRadius: 6, fontSize: 11, lineHeight: 1.6, color: '#4c1d95',
+                                  }}>
+                                    {p.developer && <div>👤 Développeur: {p.developer}</div>}
+                                    {p.stage && <div>📌 Stade: {stageLabel}</div>}
+                                    {p.capacity_mw && <div>⚡ Capacité: {p.capacity_mw} MW</div>}
+                                    {p.country && <div>📍 Pays: {p.country}</div>}
+                                    {p.region ? <div>🗺️ Région: {p.region}</div> : p.department ? <div>📍 Département: {p.department}</div> : null}
+                                    {p.rtb_date && <div>📅 Date RTB: {p.rtb_date}</div>}
+                                    {p.cod_date && <div>📅 Date COD: {p.cod_date}</div>}
+                                    {p.description && <div style={{ marginTop: 4 }}>📝 {p.description}</div>}
+                                  </div>
+                                )}
+                              </div>
+                            );})}
+                          </div>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* ✅ Checklist rapide */}
+              {prep.editChecklist?.length > 0 && (
+                <div style={{ background: '#fefce8', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#713f12' }}>
+                  <strong style={{ fontSize: 13 }}>✅ Checklist rapide</strong>
+                  <div style={{ fontSize: 11, color: '#a16207', marginBottom: 8 }}>À clarifier vite avec le client pendant l'appel</div>
+                  {prep.editChecklist.map((item, i) => {
+                    const done = item.done;
+                    const sel = item.value;
+                    return (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px',
+                        borderRadius: 6, marginBottom: 3,
+                        background: done ? '#f0fdf4' : '#fff',
+                        border: '1px solid', borderColor: done ? '#bbf7d0' : '#fef08a',
+                      }}>
+                        {/* Checkbox */}
+                        <div onClick={() => {
+                          const c = [...prep.editChecklist];
+                          c[i] = { ...c[i], done: !c[i].done };
+                          setPrep({ ...prep, editChecklist: c, hasChanges: true });
+                        }} style={{
+                          width: 18, height: 18, borderRadius: 4, cursor: 'pointer', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: done ? '#16a34a' : '#e5e7eb', color: '#fff', fontSize: 12, fontWeight: 700,
+                        }}>{done ? '✓' : ''}</div>
+                        {/* Label */}
+                        <div style={{ minWidth: 130, fontWeight: 500, color: '#1f2937', flexShrink: 0 }}>{item.label}</div>
+                        {/* Options chips */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, flex: 1 }}>
+                          {item.options ? item.options.map((opt, j) => (
+                            <span key={j} onClick={() => {
+                              const c = [...prep.editChecklist];
+                              c[i] = { ...c[i], value: c[i].value === opt ? '' : opt };
+                              setPrep({ ...prep, editChecklist: c, hasChanges: true });
+                            }} style={{
+                              padding: '2px 8px', borderRadius: 10, cursor: 'pointer', fontSize: 11,
+                              background: sel === opt ? '#2563eb' : '#f3f4f6',
+                              color: sel === opt ? '#fff' : '#374151',
+                              fontWeight: sel === opt ? 600 : 400,
+                              border: '1px solid', borderColor: sel === opt ? '#2563eb' : '#e5e7eb',
+                            }}>{opt}</span>
+                          )) : (
+                            <input value={sel} onChange={e => {
+                              const c = [...prep.editChecklist];
+                              c[i] = { ...c[i], value: e.target.value };
+                              setPrep({ ...prep, editChecklist: c, hasChanges: true });
+                            }} placeholder="..." style={{
+                              width: '100%', padding: '3px 8px', border: '1px solid #e5e7eb',
+                              borderRadius: 4, fontSize: 11, background: '#fff', color: '#374151',
+                            }} />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

@@ -12,10 +12,10 @@ export default function Settings({ user }) {
   const handleGitPush = async () => {
     setPushState({ loading: true, msg: null })
     try {
-      const res = await api.post('/git/push')
+      const res = await api.post('/backup/local')
       setPushState({ loading: false, msg: { type: 'success', text: res.data.message } })
     } catch (e) {
-      setPushState({ loading: false, msg: { type: 'error', text: e.response?.data?.detail || 'Erreur push GitHub' } })
+      setPushState({ loading: false, msg: { type: 'error', text: e.response?.data?.detail || 'Erreur backup' } })
     }
   }
 
@@ -130,12 +130,12 @@ export default function Settings({ user }) {
         </div>
       )}
 
-      {/* GitHub Push — admin only */}
+      {/* Backup local — admin only */}
       {user?.role === 'admin' && (
         <div style={{ ...card, marginTop: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', margin: '0 0 12px' }}>🚀 Push GitHub</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', margin: '0 0 12px' }}>💾 Backup local</h3>
           <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>
-            Met à jour le repo GitHub avec les dernières modifications du code.
+            Sauvegarde le code dans /root/backups/ sur le serveur.
           </p>
           {pushState.msg && (
             <div style={{
@@ -155,7 +155,7 @@ export default function Settings({ user }) {
               cursor: pushState.loading ? 'default' : 'pointer',
               width: '100%',
             }}>
-            {pushState.loading ? '⏳ Push en cours...' : '🚀 Push to GitHub'}
+            {pushState.loading ? '⏳ Backup en cours...' : '💾 Sauvegarder le code'}
           </button>
         </div>
       )}

@@ -3,6 +3,7 @@ import { useLang } from '../context/LanguageContext'
 
 const NAV_MAIN = [
   { to: '/',              key: 'nav.overview' },
+  { to: '/weekly-prep',   key: 'nav.weeklyPrep' },
   { to: '/projects',      key: 'nav.projects' },
   { to: '/opportunities', key: 'nav.opportunities' },
   { to: '/prospects',     key: 'nav.prospects' },
@@ -10,11 +11,14 @@ const NAV_MAIN = [
   { to: '/scouting',      key: 'nav.scouting' },
   { to: '/matching',      key: 'nav.matching' },
   { to: '/simulateur',    key: 'nav.simulateur' },
+  { to: '/exhibitions',   key: 'nav.exhibitions' },
 ]
 const NAV_SECONDARY = [
+  { to: '/documents',     key: 'nav.documents' },
   { to: '/templates',     key: 'nav.templates' },
   { to: '/learning',      key: 'nav.learning' },
   { to: '/settings',      key: 'nav.settings' },
+  { to: '/software',      key: 'nav.software' },
 ]
 
 export default function Sidebar({ user, onLogout, onClose, isMobile }) {

@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
 import api from '../api/client'
+import { useEffect, useState, useRef } from 'react'
 import { useLang } from '../context/LanguageContext'
 
 const DOC_TYPES = [
@@ -7,7 +7,7 @@ const DOC_TYPES = [
   { value: 'fee_agreement', label: 'Fee Agreement',  color: '#1e40af', bg: '#dbeafe' },
   { value: 'teaser',        label: 'Teaser',         color: '#065f46', bg: '#d1fae5' },
   { value: 'presentation',  label: 'Présentation',   color: '#92400e', bg: '#fef3c7' },
-  { value: 'compte_rendu',  label: 'Compte Rendu',   color: '#0369a1', bg: '#e0f2fe' },
+  { value: 'compte_rendu',  label: 'Compte Rendu',   color: '#92400e', bg: '#fef3c7' },
   { value: 'contract',      label: 'Contrat',        color: '#991b1b', bg: '#fee2e2' },
   { value: 'other',         label: 'Autre',          color: '#4b5563', bg: '#f3f4f6' },
 ]
@@ -200,8 +200,36 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
 
         {prospect.notes && (
           <div style={{ margin: '16px 0' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-              {t('prospects.detail.notes')}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                {t('prospects.detail.notes')}
+              </div>
+              <button onClick={async () => {
+                const btn = document.getElementById(`sync-btn-${prospect.id}`)
+                if (btn) { btn.textContent = '⏳ Sync...'; btn.disabled = true }
+                try {
+                  const r = await api.post(`/prospects/${prospect.id}/sync-to-crm`)
+                  if (r.data.ok) {
+                    btn.textContent = '✅ Synced'
+                    btn.style.background = '#059669'
+                    setTimeout(() => {
+                      btn.textContent = '🔄 Sync CRM'
+                      btn.style.background = '#2563eb'
+                      btn.disabled = false
+                    }, 2000)
+                  }
+                } catch {
+                  if (btn) { btn.textContent = '❌ Error'; btn.disabled = false }
+                }
+              }}
+                id={`sync-btn-${prospect.id}`}
+                style={{
+                  padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  fontSize: 11, fontWeight: 600, background: '#2563eb', color: '#fff',
+                  whiteSpace: 'nowrap',
+                }}>
+                🔄 Sync CRM
+              </button>
             </div>
             <div style={{
               background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8,
@@ -237,6 +265,69 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
             }}>
               {prospect.teaser}
             </div>
+          </div>
+        )}
+
+        {prospect.raw_transcript && (
+          <div style={{ margin: '16px 0' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+              📝 Compte-rendu brut
+            </div>
+            <div style={{
+              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8,
+              padding: 14, fontSize: 12, color: '#92400e', lineHeight: 1.5, whiteSpace: 'pre-wrap', fontStyle: 'italic', maxHeight: 200, overflowY: 'auto',
+            }}>
+              {prospect.raw_transcript}
+            </div>
+          </div>
+        )}
+
+        {prospect.email_draft && (
+          <div style={{ margin: '16px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  📧 Brouillon email
+                </div>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, color: '#9ca3af', fontStyle: 'italic', marginRight: 4 }}>vouvoiement</span>
+                <a href="https://mail.google.com"
+                  target="_blank" rel="noreferrer"
+                  style={{
+                    padding: '3px 8px', borderRadius: 5, border: '1px solid #d1d5db',
+                    background: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600,
+                    color: '#374151', textDecoration: 'none',
+                  }}>
+                  📤 Envoyer
+                </a>
+                <button onClick={async () => {
+                if (!confirm('Supprimer le brouillon ?')) return
+                await api.put(`/prospects/${prospect.id}`, { email_draft: '' })
+                window.location.reload()
+              }} style={{
+                background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer',
+                fontSize: 13, padding: '2px 6px', opacity: 0.6,
+              }}>🗑️</button>
+              </div>
+            </div>
+            <div style={{
+              background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
+              padding: 14, fontSize: 13, color: '#166534', lineHeight: 1.6, whiteSpace: 'pre-wrap',
+            }}>
+              {prospect.email_draft}
+            </div>
+          </div>
+        )}
+
+        {!prospect.email_draft && prospect.notes && (
+          <div style={{ margin: '16px 0' }}>
+            <button onClick={() => alert('Dis-moi "prépare un draft email pour ' + prospect.company + '" et je le fais !')} style={{
+              width: '100%', padding: '10px', borderRadius: 8,
+              border: '1px dashed #d1d5db', background: '#fff',
+              fontSize: 12, fontWeight: 600, color: '#6b7280',
+              cursor: 'pointer',
+            }}>
+              ✏️ Préparer un draft email
+            </button>
           </div>
         )}
 
@@ -279,7 +370,8 @@ function EditModal({ prospect, onClose, onSave }) {
   const [form, setForm] = useState(prospect || {
     company: '', contact_name: '', email: '', phone: '', linkedin: '',
     type: 'developer', status: 'to_contact', country: 'FR',
-    notes: '', teaser: '', nda_signed: 'Non', next_action: '', source: ''
+    notes: '', teaser: '', nda_signed: 'Non', next_action: '', source: '',
+    raw_transcript: '', email_draft: ''
   })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -347,6 +439,12 @@ function EditModal({ prospect, onClose, onSave }) {
         <label style={label}>{t('prospects.form.source')}</label>
         <input style={input} value={form.source || ''} onChange={e => set('source', e.target.value)} placeholder={t('prospects.form.sourcePH')} />
 
+        <label style={label}>📝 Compte-rendu brut</label>
+        <textarea style={{ ...input, height: 120, resize: 'vertical' }} value={form.raw_transcript || ''} onChange={e => set('raw_transcript', e.target.value)} placeholder="Colle le transcript de la réunion ici..." />
+
+        <label style={label}>📧 Brouillon email</label>
+        <textarea style={{ ...input, height: 120, resize: 'vertical' }} value={form.email_draft || ''} onChange={e => set('email_draft', e.target.value)} placeholder="Le draft apparaîtra ici quand tu me demanderas de le préparer..." />
+
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
           <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>{t('common.cancel')}</button>
           <button onClick={handleSave} style={{ padding: '9px 18px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontWeight: 700 }}>
@@ -407,9 +505,17 @@ export default function Prospects() {
               {data.length} contacts · {inDiscussion} {t('status.in_discussion').toLowerCase()} · {ndaCount} NDA {t('status.nda_signed').toLowerCase()}
             </div>
           </div>
-          <button onClick={() => setEditing({})} style={{ padding: '9px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-            {t('common.new')}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={async () => {
+              const res = await api.get('/gmail/compose-draft')
+              window.open(res.data.url, '_blank')
+            }} style={{ padding: '9px 14px', background: '#fff', color: '#374151', border: '1px solid #d1d5db', borderRadius: 6, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontSize: 13 }}>
+              📤
+            </button>
+            <button onClick={() => setEditing({})} style={{ padding: '9px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+              {t('common.new')}
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexShrink: 0, flexWrap: 'wrap' }}>

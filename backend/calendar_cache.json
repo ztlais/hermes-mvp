@@ -1,141 +1,117 @@
 {
-  "last_synced": "2026-06-15T12:00:00",
+  "last_synced": "2026-06-20T22:47:30",
   "events": [
     {
-      "id": "17uiocgnup5u4mif8fjru5grhd_20260615",
-      "title": "EIR Weekly Updates",
-      "start": "2026-06-15T14:00:00",
-      "end": "2026-06-15T15:00:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/uje-aiqq-vqb"
-    },
-    {
-      "id": "4q2fitcd4720j3nhcqri2bfj04_20260616",
+      "id": "4q2fitcd4720j3nhcqri2bfj04_20260623T123000Z",
       "title": "Lectures",
-      "start": "2026-06-16T14:30:00",
-      "end": "2026-06-16T15:30:00",
+      "start": "2026-06-23T14:30:00+02:00",
+      "end": "2026-06-23T17:30:00+02:00",
       "type": "personal",
       "meet_url": null
     },
     {
-      "id": "ud92qvcq76smab4a0lfan1g17k_20260616",
+      "id": "ud92qvcq76smab4a0lfan1g17k_20260623T140000Z",
       "title": "EIR Internal Meeting for Investors",
-      "start": "2026-06-16T16:00:00",
-      "end": "2026-06-16T16:30:00",
+      "start": "2026-06-23T16:00:00+02:00",
+      "end": "2026-06-23T16:30:00+02:00",
       "type": "internal",
-      "meet_url": "https://meet.google.com/oaz-ehjo-uxu"
-    },
-    {
-      "id": "kumrhm883herece7jhm6bsjsuo",
-      "title": "Call Altergie – Jean-Charles Lavigne Delville",
-      "start": "2026-06-17T11:00:00",
-      "end": "2026-06-17T11:30:00",
-      "type": "external",
-      "meet_url": "https://teams.live.com/meet/9348183027684"
-    },
-    {
-      "id": "5t1j49mpadsrb59p552kpgdrbu",
-      "title": "Follow up with Sunrock",
-      "start": "2026-06-17T11:30:00",
-      "end": "2026-06-17T12:00:00",
-      "type": "external",
-      "meet_url": "https://meet.google.com/kci-csct-hqx"
-    },
-    {
-      "id": "ng8t4r127rt6kjr00ailjchnpj_20260618",
-      "title": "Zein / Mariella",
-      "start": "2026-06-18T13:00:00",
-      "end": "2026-06-18T14:00:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/ebx-twjq-zky"
-    },
-    {
-      "id": "ud77j81nca8s6dr3o0jggvrtlc_20260619",
-      "title": "EIR Internal Discussion",
-      "start": "2026-06-19T16:00:00",
-      "end": "2026-06-19T16:30:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/oau-sqxt-jxm"
-    },
-    {
-      "id": "17uiocgnup5u4mif8fjru5grhd_20260622",
-      "title": "EIR Weekly Updates",
-      "start": "2026-06-22T14:00:00",
-      "end": "2026-06-22T15:00:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/uje-aiqq-vqb"
-    },
-    {
-      "id": "4q2fitcd4720j3nhcqri2bfj04_20260623",
-      "title": "Lectures",
-      "start": "2026-06-23T14:30:00",
-      "end": "2026-06-23T15:30:00",
-      "type": "personal",
       "meet_url": null
-    },
-    {
-      "id": "ud92qvcq76smab4a0lfan1g17k_20260623",
-      "title": "EIR Internal Meeting for Investors",
-      "start": "2026-06-23T16:00:00",
-      "end": "2026-06-23T16:30:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/oaz-ehjo-uxu"
     },
     {
       "id": "srfmnlksalg505ormfba04hpfc",
-      "title": "In-person @ Intersolar – Boyan Angelov",
-      "start": "2026-06-24T14:30:00",
-      "end": "2026-06-24T15:00:00",
+      "title": "In-person meeting @ Intersolar - Boyan Angelov & EIR",
+      "start": "2026-06-24T14:30:00+02:00",
+      "end": "2026-06-24T15:00:00+02:00",
       "type": "external",
       "meet_url": null
     },
     {
-      "id": "r8t0gj4pco1fdl7rpgv2ot51n7_20260624",
+      "id": "r8t0gj4pco1fdl7rpgv2ot51n7_20260624T140000Z",
       "title": "FR Updates",
-      "start": "2026-06-24T16:00:00",
-      "end": "2026-06-24T16:30:00",
+      "start": "2026-06-24T16:00:00+02:00",
+      "end": "2026-06-24T16:30:00+02:00",
       "type": "internal",
-      "meet_url": "https://meet.google.com/hiu-aqsn-cxe"
+      "meet_url": null
     },
     {
-      "id": "ng8t4r127rt6kjr00ailjchnpj_20260625",
+      "id": "ng8t4r127rt6kjr00ailjchnpj_20260625T110000Z",
       "title": "Zein / Mariella",
-      "start": "2026-06-25T13:00:00",
-      "end": "2026-06-25T14:00:00",
+      "start": "2026-06-25T13:00:00+02:00",
+      "end": "2026-06-25T14:00:00+02:00",
       "type": "internal",
-      "meet_url": "https://meet.google.com/ebx-twjq-zky"
+      "meet_url": null
     },
     {
-      "id": "ud77j81nca8s6dr3o0jggvrtlc_20260626",
+      "id": "4kq82rf4m42cu4rukjhmef0qjf_20260625T140000Z",
+      "title": "EIR Investor Strategy Discussions",
+      "start": "2026-06-25T16:00:00+02:00",
+      "end": "2026-06-25T16:30:00+02:00",
+      "type": "internal",
+      "meet_url": null
+    },
+    {
+      "id": "ud77j81nca8s6dr3o0jggvrtlc_20260626T140000Z",
       "title": "EIR Internal Discussion",
-      "start": "2026-06-26T16:00:00",
-      "end": "2026-06-26T16:30:00",
+      "start": "2026-06-26T16:00:00+02:00",
+      "end": "2026-06-26T16:30:00+02:00",
       "type": "internal",
-      "meet_url": "https://meet.google.com/oau-sqxt-jxm"
+      "meet_url": null
     },
     {
-      "id": "17uiocgnup5u4mif8fjru5grhd_20260629",
-      "title": "EIR Weekly Updates",
-      "start": "2026-06-29T14:00:00",
-      "end": "2026-06-29T15:00:00",
-      "type": "internal",
-      "meet_url": "https://meet.google.com/uje-aiqq-vqb"
-    },
-    {
-      "id": "4q2fitcd4720j3nhcqri2bfj04_20260630",
+      "id": "4q2fitcd4720j3nhcqri2bfj04_20260630T123000Z",
       "title": "Lectures",
-      "start": "2026-06-30T14:30:00",
-      "end": "2026-06-30T15:30:00",
+      "start": "2026-06-30T14:30:00+02:00",
+      "end": "2026-06-30T17:30:00+02:00",
       "type": "personal",
       "meet_url": null
     },
     {
-      "id": "ud92qvcq76smab4a0lfan1g17k_20260630",
+      "id": "ud92qvcq76smab4a0lfan1g17k_20260630T140000Z",
       "title": "EIR Internal Meeting for Investors",
-      "start": "2026-06-30T16:00:00",
-      "end": "2026-06-30T16:30:00",
+      "start": "2026-06-30T16:00:00+02:00",
+      "end": "2026-06-30T16:30:00+02:00",
       "type": "internal",
-      "meet_url": "https://meet.google.com/oaz-ehjo-uxu"
+      "meet_url": null
+    },
+    {
+      "id": "mjv2h1d5scnj0ad64krdao7kus",
+      "title": "Correction 2026 — Mathématiques (Série Pro)",
+      "start": "2026-07-02T08:30:00+02:00",
+      "end": "2026-07-02T17:00:00+02:00",
+      "type": "personal",
+      "meet_url": null
+    },
+    {
+      "id": "ng8t4r127rt6kjr00ailjchnpj_20260702T110000Z",
+      "title": "Zein / Mariella",
+      "start": "2026-07-02T13:00:00+02:00",
+      "end": "2026-07-02T14:00:00+02:00",
+      "type": "internal",
+      "meet_url": null
+    },
+    {
+      "id": "4kq82rf4m42cu4rukjhmef0qjf_20260702T140000Z",
+      "title": "EIR Investor Strategy Discussions",
+      "start": "2026-07-02T16:00:00+02:00",
+      "end": "2026-07-02T16:30:00+02:00",
+      "type": "internal",
+      "meet_url": null
+    },
+    {
+      "id": "dgf10pl8t3ssmjaivspss1mq00",
+      "title": "Correction 2026 — Mathématiques (Série Pro)",
+      "start": "2026-07-03T08:30:00+02:00",
+      "end": "2026-07-03T17:00:00+02:00",
+      "type": "personal",
+      "meet_url": null
+    },
+    {
+      "id": "ud77j81nca8s6dr3o0jggvrtlc_20260703T140000Z",
+      "title": "EIR Internal Discussion",
+      "start": "2026-07-03T16:00:00+02:00",
+      "end": "2026-07-03T16:30:00+02:00",
+      "type": "internal",
+      "meet_url": null
     }
   ]
 }

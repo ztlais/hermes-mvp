@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, Boolean
 from sqlalchemy.sql import func
 from database import Base
 import enum
@@ -41,5 +41,8 @@ class Prospect(Base):
     last_contact = Column(DateTime)
     next_action = Column(Text)
     source = Column(String(100))
+    raw_transcript = Column(Text)
+    email_draft = Column(Text)
+    transcript_processed = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

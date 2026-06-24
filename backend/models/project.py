@@ -10,6 +10,14 @@ class ProjectStage(str, enum.Enum):
     ready_to_build = "ready_to_build"
     construction = "construction"
     operational = "operational"
+    origination = "origination"
+    early = "early"
+    submit = "submit"
+    mid = "mid"
+    advanced = "advanced"
+    nearly_secured = "nearly_secured"
+    secured_and_clean = "secured_and_clean"
+    refused = "refused"
 
 
 class ProjectTechnology(str, enum.Enum):
@@ -43,6 +51,7 @@ class Project(Base):
     rtb_date = Column(String(20))
     cod_date = Column(String(20))
     permit_status = Column(String(50))
+    permis_status = Column(Text)
     permit_type = Column(String(20))
     land_secured = Column(Boolean, default=False)
     grid_operator = Column(String(50))
@@ -55,5 +64,9 @@ class Project(Base):
     teaser_path = Column(String(500))
     nda_signed = Column(String(10), default="Non")
     notes = Column(Text)
+    raw_data = Column(Text)  # JSON: all extra columns from the sheet
+    custom_stage = Column(String(50))
+    status_fr = Column(String(200))
+    status_en = Column(String(200))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

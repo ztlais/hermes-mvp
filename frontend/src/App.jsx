@@ -9,11 +9,15 @@ import Investors from './pages/Investors'
 import Matching from './pages/Matching'
 import Templates from './pages/Templates'
 import Learning from './pages/Learning'
+import Documents from './pages/Documents'
 import Simulateur from './pages/Simulateur'
 import Opportunities from './pages/Opportunities'
 import Projects from './pages/Projects'
 import Settings from './pages/Settings'
+import Software from './pages/Software'
+import Exhibitions from './pages/Exhibitions'
 import Login from './pages/Login'
+import WeeklyPrep from './pages/WeeklyPrep'
 import { LanguageProvider } from './context/LanguageContext'
 
 function getStoredUser() {
@@ -89,9 +93,13 @@ export default function App() {
             <Route path="/investors" element={<Investors />} />
             <Route path="/matching" element={<Matching />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/documents" element={<Documents />} />
             <Route path="/learning" element={<Learning />} />
             <Route path="/simulateur" element={<Simulateur />} />
             <Route path="/settings" element={<Settings user={user} />} />
+            <Route path="/software" element={<Software />} />
+            <Route path="/exhibitions" element={<Exhibitions />} />
+            <Route path="/weekly-prep" element={<WeeklyPrep />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

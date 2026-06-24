@@ -1,13 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
 from database import get_db
 from models.scouting import Scouting, ScoutingType, ScoutingStatus
+from models.investor import Investor, InvestorType
+from models.project import Project
 
 router = APIRouter(prefix="/scouting", tags=["scouting"])
+
+INVESTOR_TYPE_TO_SCOUTING_TYPE = {
+    InvestorType.fund: ScoutingType.investor,
+    InvestorType.corporate: ScoutingType.investor,
+    InvestorType.other: ScoutingType.investor,
+    InvestorType.family_office: ScoutingType.family_office,
+    InvestorType.ipp: ScoutingType.ipp,
+}
 
 
 class ScoutingSchema(BaseModel):
@@ -23,6 +34,7 @@ class ScoutingSchema(BaseModel):
     contact_date: Optional[datetime]
     response_date: Optional[datetime]
     notes: Optional[str]
+    data: Optional[str] = '{}'
     created_at: Optional[datetime]
 
     class Config:
@@ -40,6 +52,7 @@ class ScoutingCreate(BaseModel):
     template_used: Optional[str] = None
     contact_date: Optional[datetime] = None
     notes: Optional[str] = None
+    data: Optional[str] = None
 
 
 @router.get("/", response_model=List[ScoutingSchema])
@@ -47,6 +60,8 @@ def get_scouting(
     status: Optional[str] = None,
     type: Optional[str] = None,
     country: Optional[str] = None,
+    q: Optional[str] = None,
+    source: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     query = db.query(Scouting)
@@ -56,6 +71,14 @@ def get_scouting(
         query = query.filter(Scouting.type == type)
     if country:
         query = query.filter(Scouting.country == country)
+    if q:
+        query = query.filter(
+            (Scouting.notes.ilike(f"%{q}%")) |
+            (Scouting.company.ilike(f"%{q}%")) |
+            (Scouting.contact_name.ilike(f"%{q}%"))
+        )
+    if source:
+        query = query.filter(Scouting.notes.ilike(f"%{source}%"))
     return query.order_by(Scouting.created_at.desc()).all()
 
 
@@ -88,6 +111,27 @@ def delete_scouting(scouting_id: int, db: Session = Depends(get_db)):
     db.delete(s)
     db.commit()
     return {"message": "Supprimé"}
+
+
+@router.get("/detect-category")
+def detect_category(company: str, db: Session = Depends(get_db)):
+    name = company.strip()
+    if not name:
+        return {"detected_type": None, "matched_via": None}
+
+    inv = db.query(Investor).filter(func.lower(Investor.company) == name.lower()).first()
+    if not inv:
+        inv = db.query(Investor).filter(Investor.company.ilike(f"%{name}%")).first()
+    if inv:
+        return {"detected_type": INVESTOR_TYPE_TO_SCOUTING_TYPE[inv.type].value, "matched_via": "investors"}
+
+    proj = db.query(Project).filter(func.lower(Project.developer_name) == name.lower()).first()
+    if not proj:
+        proj = db.query(Project).filter(Project.developer_name.ilike(f"%{name}%")).first()
+    if proj:
+        return {"detected_type": ScoutingType.developer.value, "matched_via": "projects"}
+
+    return {"detected_type": None, "matched_via": None}
 
 
 @router.get("/stats/summary")

@@ -13,6 +13,8 @@ class ScoutingStatus(str, enum.Enum):
     converted = "converted"
     no_response = "no_response"
     not_interested = "not_interested"
+    premiere_connexion = "premiere_connexion"
+    deuxieme_connexion = "deuxieme_connexion"
 
 
 class ScoutingType(str, enum.Enum):
@@ -37,5 +39,6 @@ class Scouting(Base):
     contact_date = Column(DateTime)
     response_date = Column(DateTime)
     notes = Column(Text)
+    data = Column(Text, default='{}')  # JSON: {li_1ere, em_1ere, li_2eme, em_2eme, li_1ere_sent, em_1ere_sent, li_2eme_sent, em_2eme_sent, later, history, person}
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

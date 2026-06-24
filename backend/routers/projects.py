@@ -39,8 +39,13 @@ class ProjectSchema(BaseModel):
     irr: Optional[float] = None
     notes: Optional[str] = None
     nda_signed: Optional[str] = None
+    raw_data: Optional[str] = None
+    custom_stage: Optional[str] = None
+    status_fr: Optional[str] = None
+    status_en: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    permis_status: Optional[str] = None
 
     class Config:
         from_attributes = True

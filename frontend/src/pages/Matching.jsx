@@ -46,7 +46,7 @@ Dans le cadre de notre activité de conseil en transactions ENR, nous avons iden
 ⚡ Technologie : ${techLabel}
 📊 Stade : ${stageLabel}
 🔋 Capacité : ${match.project_capacity_mw ? `${match.project_capacity_mw} MWc` : 'À confirmer'}
-🌍 Localisation : ${match.project_region || match.project_country || 'France'}
+🌍 Localisation : ${match.project_region || match.project_department || match.project_country || 'France'}
 
 Ce projet présente un profil solide et répond à vos critères d'acquisition.
 
@@ -122,6 +122,7 @@ function MatchCard({ match, onIntro }) {
   const [expanded, setExpanded] = useState(false)
   const goodReasons = match.reasons.filter(r => r.match)
   const badReasons = match.reasons.filter(r => !r.match)
+  const displayScore = match.ai_generated ? match.ai_score : match.score
 
   const TECH_LABELS = {
     solar: t('tech.solar'), wind: t('tech.wind'), bess: t('tech.bess'),
@@ -136,7 +137,14 @@ function MatchCard({ match, onIntro }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
       <div style={{ display: 'flex', gap: 16, padding: 18, alignItems: 'flex-start' }}>
-        <ScoreBadge score={match.score} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <ScoreBadge score={displayScore} />
+          {match.ai_generated && (
+            <div style={{ fontSize: 9, color: '#9ca3af', textAlign: 'center' }}>
+              {t('matching.aiDetScore')}: {match.score}
+            </div>
+          )}
+        </div>
 
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', gap: 20, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -164,7 +172,7 @@ function MatchCard({ match, onIntro }) {
               <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
                 {TECH_LABELS[match.project_technology] || match.project_technology}
                 {match.project_capacity_mw && ` · ${match.project_capacity_mw} MW`}
-                {match.project_region && ` · ${match.project_region}`}
+                {match.project_region ? ` · ${match.project_region}` : match.project_department ? ` · ${match.project_department}` : ''}
               </div>
               {match.project_stage && (
                 <div style={{ fontSize: 11, color: '#2563eb', marginTop: 4 }}>
@@ -186,6 +194,13 @@ function MatchCard({ match, onIntro }) {
               </span>
             ))}
           </div>
+
+          {match.ai_generated && (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '6px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', flexShrink: 0 }}>{t('matching.aiBadge')}</span>
+              <span style={{ fontSize: 12, color: '#4b5563' }}>{match.ai_reason}</span>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
@@ -230,24 +245,39 @@ export default function Matching() {
   const [developers, setDevelopers] = useState([])
   const [selectedInvestor, setSelectedInvestor] = useState('')
   const [selectedDeveloper, setSelectedDeveloper] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
 
-  const load = () => {
-    setLoading(true)
+  const applyResults = (data) => {
+    setMatches(data)
+    setStats({
+      total: data.length,
+      high: data.filter(m => (m.ai_generated ? m.ai_score : m.score) >= 70).length,
+      medium: data.filter(m => {
+        const s = m.ai_generated ? m.ai_score : m.score
+        return s >= 40 && s < 70
+      }).length,
+    })
+  }
+
+  const buildParams = () => {
     const params = { min_score: minScore }
     if (selectedInvestor) params.investor_id = selectedInvestor
     if (selectedDeveloper) params.developer = selectedDeveloper
+    return params
+  }
 
-    api.get('/matching/', { params })
-      .then(r => {
-        setMatches(r.data)
-        setStats({
-          total: r.data.length,
-          high: r.data.filter(m => m.score >= 70).length,
-          medium: r.data.filter(m => m.score >= 40 && m.score < 70).length,
-        })
-        setLoading(false)
-      })
+  const load = () => {
+    setLoading(true)
+    api.get('/matching/', { params: buildParams() })
+      .then(r => { applyResults(r.data); setLoading(false) })
       .catch(() => { setLoading(false); setMatches([]) })
+  }
+
+  const analyzeWithAI = () => {
+    setAiLoading(true)
+    api.get('/matching/analyze', { params: buildParams() })
+      .then(r => { applyResults(r.data); setAiLoading(false) })
+      .catch(() => { setAiLoading(false) })
   }
 
   useEffect(() => {
@@ -281,6 +311,13 @@ export default function Matching() {
           ))}
           <button onClick={load} style={{ padding: '8px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
             {t('matching.refresh')}
+          </button>
+          <button onClick={analyzeWithAI} disabled={aiLoading || loading || matches.length === 0} style={{
+            padding: '8px 16px', background: aiLoading ? '#ddd6fe' : '#7c3aed', color: '#fff', border: 'none',
+            borderRadius: 6, cursor: aiLoading || loading || matches.length === 0 ? 'default' : 'pointer', fontWeight: 600,
+            opacity: matches.length === 0 ? 0.5 : 1,
+          }}>
+            {aiLoading ? t('matching.aiAnalyzing') : t('matching.aiAnalyze')}
           </button>
         </div>
       </div>
