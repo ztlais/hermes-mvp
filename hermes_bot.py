@@ -12,7 +12,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 TOKEN = "8655263243:AAGki72yPJbui8yBzeXuorRURMli_1Qvd-I"
 API_BASE = "http://localhost:8000"
 USERNAME = "zein"
-PASSWORD = "Virus291214"
+PASSWORD = "hermes2026"
 
 # Conversation states
 (ASK_PROSPECT_NAME, ASK_PROSPECT_COUNTRY, ASK_PROSPECT_STATUS,
