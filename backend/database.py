@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://hermes:hermes2024@localhost:5432/hermes_mvp")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://hermes:hermes2024@127.0.0.1:5432/hermes_mvp")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

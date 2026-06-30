@@ -53,6 +53,17 @@ const TECH_COLORS = {
 
 const STAGES = ['origination', 'early', 'submit', 'mid', 'advanced', 'nearly_secured', 'secured_and_clean', 'refused']
 
+const COUNTRY_META = {
+  'FR': { label: 'France',    flag: '🇫🇷' },
+  'DE': { label: 'Allemagne', flag: '🇩🇪' },
+  'ES': { label: 'Espagne',   flag: '🇪🇸' },
+  'IT': { label: 'Italie',    flag: '🇮🇹' },
+  'PT': { label: 'Portugal',  flag: '🇵🇹' },
+  'GB': { label: 'UK',        flag: '🇬🇧' },
+  'JP': { label: 'Japon',     flag: '🇯🇵' },
+  'PL': { label: 'Pologne',   flag: '🇵🇱' },
+}
+
 // Column definitions: key, label translation key, accessor function
 const fmtNum = (n) => n != null ? new Intl.NumberFormat('fr-FR').format(Math.round(n)) : '—'
 
@@ -471,17 +482,11 @@ export default function Projects() {
   const [filterStage, setFilterStage] = useState('')
   const [filterDev, setFilterDev] = useState('')
   const [filterTech, setFilterTech] = useState('')
-  const [zone, setZone] = useState('france')
+  const [selectedMarket, setSelectedMarket] = useState('all')
 
-  // Column visibility: key columns visible by default (France vs Africa)
-  const defaultVisibleForZone = (z) => {
-    if (z === 'afrique') {
-      return ['code', 'pays', 'entreprise', 'name', 'profil', 'etat_developpement', 'capex', 'beneficiaires', 'credits_carbone', 'irr', 'securisation']
-    }
-    return ['name', 'profil', 'etat_developpement', 'rendement', 'p50', 'mw', 'code', 'securisation', 'offtake_type']
-  }
+  const defaultVisibleCols = ['name', 'profil', 'etat_developpement', 'rendement', 'p50', 'mw', 'code', 'securisation', 'offtake_type']
   const [visibleCols, setVisibleCols] = useState(() =>
-    Object.fromEntries(ALL_COLUMNS.map(c => [c.key, defaultVisibleForZone('france').includes(c.key)]))
+    Object.fromEntries(ALL_COLUMNS.map(c => [c.key, defaultVisibleCols.includes(c.key)]))
   )
   const [showColMenu, setShowColMenu] = useState(false)
   const colMenuRef = useRef(null)
@@ -518,12 +523,14 @@ export default function Projects() {
 
   useEffect(() => { load() }, [filterStage, filterDev, filterTech])
 
-  useEffect(() => { setFilterDev(''); setSelected(null); setVisibleCols(
-    Object.fromEntries(ALL_COLUMNS.map(c => [c.key, defaultVisibleForZone(zone).includes(c.key)]))
-  ) }, [zone])
+  useEffect(() => { setFilterDev(''); setSelected(null) }, [selectedMarket])
 
-  const isFrance = (p) => !p.country || p.country.toUpperCase() === 'FR'
-  const zoned = projects.filter(p => zone === 'france' ? isFrance(p) : !isFrance(p))
+  const availableMarkets = [...new Set(projects.map(p => (p.country || 'FR').toUpperCase()))].sort()
+
+  const zoned = projects.filter(p => {
+    if (selectedMarket === 'all') return true
+    return (p.country || 'FR').toUpperCase() === selectedMarket
+  })
 
   const filtered = zoned.filter(p =>
     !search ||
@@ -720,20 +727,35 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Zone tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f3f4f6', borderRadius: 10, padding: 4, width: 'fit-content' }}>
-        {[['france', 'proj.zone.france'], ['afrique', 'proj.zone.afrique']].map(([z, key]) => (
-          <button key={z} onClick={() => setZone(z)}
-            style={{
-              padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600,
-              background: zone === z ? '#059669' : 'transparent',
-              color: zone === z ? '#fff' : '#6b7280',
-              transition: 'all 0.15s',
-            }}>
-            {t(key)}
-          </button>
-        ))}
+      {/* Market tabs — dynamic from available countries */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f3f4f6', borderRadius: 10, padding: 4, width: 'fit-content', flexWrap: 'wrap' }}>
+        <button onClick={() => setSelectedMarket('all')}
+          style={{
+            padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            fontSize: 13, fontWeight: 600,
+            background: selectedMarket === 'all' ? '#059669' : 'transparent',
+            color: selectedMarket === 'all' ? '#fff' : '#6b7280',
+            transition: 'all 0.15s',
+          }}>
+          🌍 Tous
+        </button>
+        {availableMarkets.map(code => {
+          const meta = COUNTRY_META[code] || { label: code, flag: '🏳️' }
+          const count = projects.filter(p => (p.country || 'FR').toUpperCase() === code).length
+          return (
+            <button key={code} onClick={() => setSelectedMarket(code)}
+              style={{
+                padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600,
+                background: selectedMarket === code ? '#059669' : 'transparent',
+                color: selectedMarket === code ? '#fff' : '#6b7280',
+                transition: 'all 0.15s',
+              }}>
+              {meta.flag} {meta.label}
+              <span style={{ fontSize: 11, marginLeft: 5, opacity: 0.75 }}>({count})</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Filters row */}
@@ -759,6 +781,7 @@ export default function Projects() {
           <option value="">{t('proj.filter.allTech')}</option>
           <option value="solar">{t('proj.filter.solar')}</option>
           <option value="wind">{t('proj.filter.wind')}</option>
+          <option value="bess">{t('proj.filter.bess')}</option>
         </select>
 
         {(filterStage || filterDev || filterTech || search) && (

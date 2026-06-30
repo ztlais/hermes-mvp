@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from database import init_db
-from routers import prospects, investors, matching, scouting, learning, templates, calendar, documents, simulateur, projects, opportunities, prep, gmail, weekly_tasks, exhibitions
+from routers import prospects, investors, matching, scouting, learning, templates, calendar, documents, simulateur, projects, opportunities, prep, gmail, weekly_tasks, exhibitions, search
 from routers import auth as auth_router
 from routers import git as git_router
 from auth import get_current_user
@@ -50,6 +50,7 @@ app.include_router(gmail.router, **protected)
 app.include_router(git_router.router, **protected)  # backup local
 app.include_router(weekly_tasks.router, **protected)
 app.include_router(exhibitions.router, **protected)
+app.include_router(search.router, **protected)
 
 
 @app.on_event("startup")

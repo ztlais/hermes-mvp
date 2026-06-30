@@ -156,7 +156,7 @@ function InfoRow({ icon, label, value, href }) {
 }
 
 function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const statusStyle = STATUS_VALUES.find(s => s.value === prospect.status)
 
   return (
@@ -191,14 +191,17 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
             {t('prospects.detail.contact')}
           </div>
           <InfoRow icon="👤" label={t('prospects.detail.name')} value={prospect.contact_name} />
+          {prospect.job_title && <InfoRow icon="🏷️" label="Titre" value={prospect.job_title} />}
           <InfoRow icon="✉️" label="Email" value={prospect.email} href={prospect.email ? `mailto:${prospect.email}` : null} />
           <InfoRow icon="📞" label={t('prospects.detail.phone')} value={prospect.phone} href={prospect.phone ? `tel:${prospect.phone}` : null} />
+          {prospect.fax && <InfoRow icon="📠" label="Fax" value={prospect.fax} />}
+          {prospect.address && <InfoRow icon="📍" label="Adresse" value={prospect.address} />}
           <InfoRow icon="🔗" label="LinkedIn" value={prospect.linkedin} href={prospect.linkedin} />
           <InfoRow icon="🌍" label={t('prospects.detail.country')} value={prospect.country} />
           <InfoRow icon="📌" label={t('prospects.detail.source')} value={prospect.source} />
         </div>
 
-        {prospect.notes && (
+        {(prospect.notes || prospect.notes_en) && (
           <div style={{ margin: '16px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -235,7 +238,7 @@ function ProspectDetail({ prospect, onEdit, onClose, onDelete }) {
               background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8,
               padding: 14, fontSize: 13, color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap',
             }}>
-              {prospect.notes}
+              {lang === 'en' && prospect.notes_en ? prospect.notes_en : prospect.notes}
             </div>
           </div>
         )}
@@ -462,6 +465,7 @@ export default function Prospects() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterType, setFilterType] = useState('')
+  const [filterIntersolar, setFilterIntersolar] = useState(false)
   const [selected, setSelected] = useState(null)
   const [editing, setEditing] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -472,13 +476,14 @@ export default function Prospects() {
     if (search) params.search = search
     if (filterStatus) params.status = filterStatus
     if (filterType) params.type = filterType
+    if (filterIntersolar) params.source = 'Intersolar 2026'
     api.get('/prospects/', { params }).then(r => {
       setData(r.data)
       setLoading(false)
     })
   }
 
-  useEffect(() => { load() }, [search, filterStatus, filterType])
+  useEffect(() => { load() }, [search, filterStatus, filterType, filterIntersolar])
 
   const handleDelete = async () => {
     if (!confirm(`${t('common.delete')} ${selected.company} ?`)) return
@@ -531,6 +536,18 @@ export default function Prospects() {
             <option value="">{t('prospects.allTypes')}</option>
             {TYPE_VALUES.map(tp => <option key={tp.value} value={tp.value}>{t('type.' + tp.value)}</option>)}
           </select>
+          <button
+            onClick={() => setFilterIntersolar(v => !v)}
+            style={{
+              padding: '7px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              border: filterIntersolar ? '2px solid #f59e0b' : '1px solid #d1d5db',
+              background: filterIntersolar ? '#fef3c7' : '#fff',
+              color: filterIntersolar ? '#92400e' : '#6b7280',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            ☀️ Intersolar 2026
+          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8 }}>

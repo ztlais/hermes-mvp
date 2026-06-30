@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -76,7 +76,255 @@ const OPP_STATUS_LIST = [
   { key: 'perdu', color: '#f87171' },
 ]
 
+const FR_STAGES = [
+  {
+    id: 'origination',
+    label: 'Origination',
+    color: '#9ca3af',
+    secured: 'Rien de sécurisé',
+    ongoing: 'Prospection foncière — Real estate: Possible',
+    detail: 'Projet identifié. Aucun terrain signé, aucune démarche engagée.',
+  },
+  {
+    id: 'early',
+    label: 'Early',
+    color: '#60a5fa',
+    secured: 'Real estate — Secured',
+    ongoing: 'Environmental — Ongoing',
+    detail: 'Foncier sécurisé (promesse de bail). Études environnement en cours. Permis pas encore déposé.',
+  },
+  {
+    id: 'submit',
+    label: 'Submit',
+    color: '#818cf8',
+    secured: 'Env — Done · Authorities — Secured',
+    ongoing: 'Permitting — Near apply',
+    detail: 'Autorisations locales obtenues. Études terminées. Dépôt du permis de construire imminent.',
+  },
+  {
+    id: 'mid',
+    label: 'Mid',
+    color: '#a78bfa',
+    secured: 'Easements — Secured · Permitting — Submitted',
+    ongoing: 'PC en instruction',
+    detail: 'Servitudes foncières sécurisées. PC déposé (date passée). En attente de la décision administrative.',
+  },
+  {
+    id: 'advanced',
+    label: 'Advanced',
+    color: '#f59e0b',
+    secured: 'Permitting — Deemed completed',
+    ongoing: 'En attente de la décision finale',
+    detail: 'Instruction terminée. PC considéré comme complet. Décision finale imminente.',
+  },
+  {
+    id: 'nearly-secured',
+    label: 'Nearly secured',
+    color: '#fb923c',
+    secured: 'Permitting — Obtained',
+    ongoing: 'Grid — Nearly secured · Tariff — Nearly secured',
+    detail: 'PC obtenu (sous recours ou purgé). Raccordement réseau et contrat d\'achat en cours de finalisation.',
+  },
+  {
+    id: 'secured-clean',
+    label: 'Secured & clean',
+    color: '#10b981',
+    secured: 'Grid — Secured · Tariff — Secured',
+    ongoing: '— Prêt à construire (RTB) ✅',
+    detail: 'Tout sécurisé. PC purgé de tout recours. Raccordement + contrat d\'achat signés.',
+  },
+  {
+    id: 'refused',
+    label: 'Refused',
+    color: '#ef4444',
+    secured: '❌ Projet arrêté',
+    ongoing: '',
+    detail: 'Permis de construire refusé définitivement. Projet abandonné.',
+  },
+]
+
+const DE_STAGES = [
+  {
+    id: 'b-plan',
+    label: 'B-Plan',
+    color: '#9ca3af',
+    secured: 'Pachtvertrag — signé (foncier)',
+    ongoing: 'Bebauungsplan en cours de modification municipale',
+    detail: 'La commune adapte le plan d\'urbanisme (Bebauungsplan) pour autoriser le projet solaire.',
+  },
+  {
+    id: 'bauantrag',
+    label: 'Bauantrag',
+    color: '#60a5fa',
+    secured: 'B-Plan — approuvé',
+    ongoing: 'Demande de permis de construire déposée (Baubehörde)',
+    detail: 'Bauantrag déposé auprès de l\'autorité de construction. En attente d\'instruction.',
+  },
+  {
+    id: 'baugenehmigung',
+    label: 'Baugenehmigung',
+    color: '#818cf8',
+    secured: 'Permis de construire — Erteilt (obtenu)',
+    ongoing: 'EEG-Ausschreibung + Netzanschluss lancés en parallèle',
+    detail: 'Permis obtenu. Appel d\'offres EEG et raccordement réseau démarrés simultanément.',
+  },
+  {
+    id: 'eeg-netz',
+    label: 'EEG + Netzanschluss',
+    color: '#f59e0b',
+    secured: 'EEG-Zuschlag — obtenu (tarif garanti)',
+    ongoing: 'Netzanschluss — Nearly secured',
+    detail: 'Appel d\'offres EEG remporté. Raccordement réseau en cours de finalisation.',
+  },
+  {
+    id: 'bau',
+    label: 'Bau',
+    color: '#fb923c',
+    secured: 'Netzanschluss — Secured · EEG — Secured',
+    ongoing: 'Construction en cours (Bau)',
+    detail: 'Tous permis et contrats sécurisés. Construction lancée.',
+  },
+  {
+    id: 'betrieb',
+    label: 'Betrieb',
+    color: '#10b981',
+    secured: 'Tout sécurisé ✅ — En exploitation (COD)',
+    ongoing: '—',
+    detail: 'Projet en opération. Raccordé au réseau, production sous contrat EEG.',
+  },
+  {
+    id: 'ablehnung',
+    label: 'Ablehnung',
+    color: '#ef4444',
+    secured: '❌ Projet arrêté',
+    ongoing: '',
+    detail: 'Permis de construire refusé (Ablehnung). Projet abandonné.',
+  },
+]
+
+const COUNTRY_STAGES = { fr: FR_STAGES, de: DE_STAGES }
+const COUNTRIES = [
+  { id: 'fr', label: '🇫🇷 France', refused: 'refused' },
+  { id: 'de', label: '🇩🇪 Allemagne', refused: 'ablehnung' },
+]
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function DevStageBar() {
+  const [open, setOpen] = useState(true)
+  const [country, setCountry] = useState('fr')
+  const [selected, setSelected] = useState(null)
+
+  const countryMeta = COUNTRIES.find(c => c.id === country)
+  const allStages = COUNTRY_STAGES[country]
+  const mainStages = allStages.filter(s => s.id !== countryMeta.refused)
+  const refusedStage = allStages.find(s => s.id === countryMeta.refused)
+  const stage = allStages.find(s => s.id === selected)
+
+  const switchCountry = (c) => { setCountry(c); setSelected(null) }
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, marginBottom: 16, overflow: 'hidden' }}>
+      <div onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', cursor: 'pointer', userSelect: 'none' }}>
+        <span style={{ fontSize: 13 }}>📊</span>
+        <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: '#1f2937' }}>
+          Stades de développement — Origination → RTB
+        </span>
+        <span style={{ fontSize: 11, color: '#6b7280', background: '#f3f4f6', borderRadius: 6, padding: '2px 8px', fontWeight: 500 }}>
+          {countryMeta.label}
+        </span>
+        <span style={{ fontSize: 11, color: '#9ca3af', display: 'inline-block', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+      </div>
+
+      {open && (
+        <div style={{ borderTop: '1px solid #f3f4f6', padding: '12px 16px' }}>
+          {/* Country tabs */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            {COUNTRIES.map(c => (
+              <button key={c.id} onClick={(e) => { e.stopPropagation(); switchCountry(c.id) }}
+                style={{
+                  padding: '4px 12px', borderRadius: 8,
+                  border: `1.5px solid ${country === c.id ? '#2563eb' : '#e5e7eb'}`,
+                  background: country === c.id ? '#eff6ff' : '#f9fafb',
+                  color: country === c.id ? '#2563eb' : '#6b7280',
+                  fontSize: 12, fontWeight: country === c.id ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Stage pills */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: stage ? 12 : 0 }}>
+            {mainStages.map((s, i) => {
+              const isSelected = selected === s.id
+              return (
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button onClick={() => setSelected(isSelected ? null : s.id)}
+                    style={{
+                      padding: '4px 11px', borderRadius: 14,
+                      border: `1.5px solid ${isSelected ? s.color : '#e5e7eb'}`,
+                      background: isSelected ? s.color : '#f9fafb',
+                      color: isSelected ? '#fff' : '#374151',
+                      fontSize: 11, fontWeight: isSelected ? 700 : 500,
+                      cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+                    }}>
+                    {i + 1}. {s.label}
+                  </button>
+                  {i < mainStages.length - 1 && (
+                    <span style={{ color: '#d1d5db', fontSize: 11 }}>→</span>
+                  )}
+                </div>
+              )
+            })}
+            {refusedStage && (
+              <>
+                <span style={{ color: '#d1d5db', fontSize: 11, marginLeft: 4 }}>|</span>
+                <button onClick={() => setSelected(selected === refusedStage.id ? null : refusedStage.id)}
+                  style={{
+                    padding: '4px 11px', borderRadius: 14,
+                    border: `1.5px solid ${selected === refusedStage.id ? refusedStage.color : '#e5e7eb'}`,
+                    background: selected === refusedStage.id ? refusedStage.color : '#f9fafb',
+                    color: selected === refusedStage.id ? '#fff' : '#ef4444',
+                    fontSize: 11, fontWeight: selected === refusedStage.id ? 700 : 500,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}>
+                  ❌ {refusedStage.label}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Detail panel */}
+          {stage && (
+            <div style={{
+              background: '#fafafa', borderLeft: `3px solid ${stage.color}`,
+              borderRadius: '0 8px 8px 0', padding: '10px 14px',
+              display: 'flex', flexDirection: 'column', gap: 5,
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                <span style={{ fontWeight: 700, color: '#059669', fontSize: 12, minWidth: 80 }}>✅ Sécurisé</span>
+                <span style={{ fontSize: 12, color: '#374151' }}>{stage.secured}</span>
+              </div>
+              {stage.ongoing && stage.ongoing !== '—' && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                  <span style={{ fontWeight: 700, color: '#d97706', fontSize: 12, minWidth: 80 }}>📝 En cours</span>
+                  <span style={{ fontSize: 12, color: '#374151' }}>{stage.ongoing}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                <span style={{ fontWeight: 700, color: '#6b7280', fontSize: 12, minWidth: 80 }}>💬 Note</span>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>{stage.detail}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function KPI({ label, value, color, sub, icon }) {
   return (
@@ -296,6 +544,143 @@ function StageBarChart({ data, t }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+const TYPE_ROUTE = {
+  prospect: '/prospects',
+  investor: '/investors',
+  project: '/projects',
+  scouting: '/scouting',
+  opportunity: '/opportunities',
+}
+
+function GlobalSearch() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
+  const inputRef = useRef(null)
+  const wrapRef = useRef(null)
+  const debounceRef = useRef(null)
+
+  const search = useCallback((q) => {
+    if (!q.trim() || q.trim().length < 2) { setResults([]); setOpen(false); return }
+    setLoading(true)
+    api.get('/search/global', { params: { q: q.trim() } })
+      .then(r => { setResults(r.data.results || []); setOpen(true) })
+      .catch(() => setResults([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleChange = (e) => {
+    const v = e.target.value
+    setQuery(v)
+    clearTimeout(debounceRef.current)
+    if (v.trim().length < 2) { setResults([]); setOpen(false); return }
+    debounceRef.current = setTimeout(() => search(v), 280)
+  }
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') { setOpen(false); inputRef.current?.blur() }
+  }
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative', marginBottom: 18 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        background: '#fff', border: '2px solid ' + (open ? '#2563eb' : '#e5e7eb'),
+        borderRadius: 12, padding: '10px 16px',
+        boxShadow: open ? '0 0 0 3px #2563eb22' : '0 1px 4px rgba(0,0,0,0.06)',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+      }}>
+        <span style={{ fontSize: 18, opacity: 0.4 }}>🔍</span>
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={handleChange}
+          onKeyDown={handleKey}
+          onFocus={() => { if (results.length > 0) setOpen(true) }}
+          placeholder="Rechercher partout — prospects, investisseurs, projets, scouting, opportunités..."
+          style={{
+            flex: 1, border: 'none', outline: 'none', fontSize: 14,
+            fontFamily: 'inherit', color: '#1f2937', background: 'transparent',
+          }}
+        />
+        {loading && <span style={{ fontSize: 12, color: '#9ca3af' }}>…</span>}
+        {query && !loading && (
+          <button onClick={() => { setQuery(''); setResults([]); setOpen(false) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16, padding: 0 }}>✕</button>
+        )}
+      </div>
+
+      {open && results.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 999,
+          background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.12)', marginTop: 6,
+          maxHeight: 420, overflowY: 'auto',
+        }}>
+          {results.map((r, i) => (
+            <a key={i} href={TYPE_ROUTE[r.type] || '/'}
+              onClick={() => setOpen(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 16px', textDecoration: 'none',
+                borderBottom: i < results.length - 1 ? '1px solid #f3f4f6' : 'none',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+            >
+              <span style={{
+                fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 10,
+                background: r.type_color + '18', color: r.type_color,
+                minWidth: 72, textAlign: 'center', flexShrink: 0,
+              }}>
+                {r.type_label}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.title}
+                </div>
+                {r.subtitle && (
+                  <div style={{ fontSize: 11, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {r.subtitle}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                {r.country && <span style={{ fontSize: 10, color: '#9ca3af' }}>{r.country}</span>}
+                {r.meta && <span style={{ fontSize: 10, color: '#9ca3af', background: '#f3f4f6', borderRadius: 6, padding: '1px 6px' }}>{r.meta}</span>}
+              </div>
+            </a>
+          ))}
+          <div style={{ padding: '8px 16px', fontSize: 11, color: '#9ca3af', borderTop: '1px solid #f3f4f6', background: '#fafafa', borderRadius: '0 0 12px 12px' }}>
+            {results.length} résultat{results.length > 1 ? 's' : ''} pour « {query} »
+          </div>
+        </div>
+      )}
+
+      {open && query.trim().length >= 2 && results.length === 0 && !loading && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 999,
+          background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
+          boxShadow: '0 8px 30px rgba(0,0,0,0.12)', marginTop: 6,
+          padding: '20px 16px', textAlign: 'center', color: '#9ca3af', fontSize: 13,
+        }}>
+          Aucun résultat pour « {query} »
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Overview() {
   const { t } = useLang()
   const [stats, setStats] = useState({})
@@ -405,9 +790,13 @@ export default function Overview() {
 
   return (
     <div style={{ maxWidth: 1200 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, color: '#1f2937' }}>
+      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: '#1f2937' }}>
         {t('overview.title')}
       </h1>
+
+      <GlobalSearch />
+
+      <DevStageBar />
 
       {/* KPI Row */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>

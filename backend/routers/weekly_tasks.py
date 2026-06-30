@@ -379,25 +379,30 @@ def _format_suggestion(row: TaskSuggestion) -> dict:
         "task": row.task,
         "ai_generated": row.ai_generated,
         "last_update": row.last_update.isoformat() if row.last_update else None,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
     }
 
 
 def _load_persisted_suggestions(db: Session, week: date):
     rows = db.query(TaskSuggestion).filter(TaskSuggestion.week_start == week).all()
+    # Sort: most recently generated batch first, then by score within same batch
+    def sort_key(x):
+        return (x["created_at"] or "", x["score"])
     prospects = sorted(
         [_format_suggestion(r) for r in rows if r.source == "prospect"],
-        key=lambda x: x["score"], reverse=True,
+        key=sort_key, reverse=True,
     )
     investors = sorted(
         [_format_suggestion(r) for r in rows if r.source == "investor"],
-        key=lambda x: x["score"], reverse=True,
+        key=sort_key, reverse=True,
     )
     return prospects, investors
 
 
 def _compute_and_persist_suggestions(db: Session, week: date):
-    """Calcule les suggestions deterministes + IA, les persiste en base (en remplacant
-    celles deja stockees pour la semaine), et renvoie (prospects, investors) formates.
+    """Calcule les suggestions deterministes + IA et persiste en base uniquement
+    les nouvelles (refs absentes de la semaine). Les anciennes sont conservees.
+    Renvoie (prospects, investors) tries par created_at DESC puis score DESC.
     """
     from models.investor import Investor
     now = datetime.utcnow()
@@ -551,8 +556,13 @@ def _compute_and_persist_suggestions(db: Session, week: date):
     # On ne persiste que ce qui sera reellement affiche (top 20 prospects + top 15 investisseurs)
     to_persist = prospect_suggestions[:20] + investor_suggestions[:15]
 
-    db.query(TaskSuggestion).filter(TaskSuggestion.week_start == week).delete()
+    # Garder les anciennes suggestions — n'insérer que les nouvelles refs
+    existing_refs = {
+        r.ref for r in db.query(TaskSuggestion.ref).filter(TaskSuggestion.week_start == week).all()
+    }
     for s in to_persist:
+        if s["ref"] in existing_refs:
+            continue
         db.add(TaskSuggestion(
             week_start=week,
             source=s["source"],

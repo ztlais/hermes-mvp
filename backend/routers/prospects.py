@@ -26,6 +26,10 @@ class ProspectSchema(BaseModel):
     last_contact: Optional[datetime]
     next_action: Optional[str]
     source: Optional[str]
+    job_title: Optional[str]
+    address: Optional[str]
+    fax: Optional[str]
+    notes_en: Optional[str]
     raw_transcript: Optional[str]
     email_draft: Optional[str]
     transcript_processed: Optional[bool]
@@ -49,6 +53,9 @@ class ProspectCreate(BaseModel):
     nda_signed: Optional[str] = "Non"
     next_action: Optional[str] = None
     source: Optional[str] = None
+    job_title: Optional[str] = None
+    address: Optional[str] = None
+    fax: Optional[str] = None
     raw_transcript: Optional[str] = None
     email_draft: Optional[str] = None
     transcript_processed: Optional[bool] = None
@@ -59,6 +66,7 @@ def get_prospects(
     status: Optional[str] = None,
     type: Optional[str] = None,
     search: Optional[str] = None,
+    source: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     query = db.query(Prospect)
@@ -66,6 +74,8 @@ def get_prospects(
         query = query.filter(Prospect.status == status)
     if type:
         query = query.filter(Prospect.type == type)
+    if source:
+        query = query.filter(Prospect.source.ilike(f"%{source}%"))
     if search:
         query = query.filter(
             Prospect.company.ilike(f"%{search}%") |
