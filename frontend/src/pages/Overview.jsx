@@ -685,6 +685,7 @@ export default function Overview() {
   const { t } = useLang()
   const [stats, setStats] = useState({})
   const [agenda, setAgenda] = useState({ events: [], last_synced: null })
+  const [calendarView, setCalendarView] = useState('upcoming') // 'upcoming' | 'far' | 'past'
   const [projectStats, setProjectStats] = useState({ total: 0, total_mw: 0, by_technology: [], by_stage: [] })
   const [oppStats, setOppStats] = useState({ total: 0, by_type: {}, by_status: {} })
   const [prep, setPrep] = useState(null) // { company, loading, data, error }
@@ -768,10 +769,16 @@ export default function Overview() {
       setStats({ prospects: p.data, investors: inv.data, scouting: sc.data })
     }).catch(() => {})
 
-    api.get('/calendar/events?limit=8').then(r => setAgenda(r.data)).catch(() => {})
     api.get('/projects/stats/analytics').then(r => setProjectStats(r.data)).catch(() => {})
     api.get('/opportunities/stats/summary').then(r => setOppStats(r.data)).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    const scope = calendarView === 'past' ? 'past' : 'upcoming'
+    const limit = calendarView === 'far' ? 50 : 8
+    const days = calendarView === 'far' ? '&days=14' : ''
+    api.get(`/calendar/events?limit=${limit}&scope=${scope}${days}`).then(r => setAgenda(r.data)).catch(() => {})
+  }, [calendarView])
 
   const p   = stats.prospects || {}
   const inv = stats.investors || {}
@@ -836,13 +843,38 @@ export default function Overview() {
             )}
           </span>
         }>
-          <div style={{ display: 'flex', gap: 10, marginBottom: 10, fontSize: 10, color: '#9ca3af' }}>
-            <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#2563eb', marginRight: 3 }} />{t('overview.calendar.external')}</span>
-            <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', marginRight: 3 }} />{t('overview.calendar.internal')}</span>
-            <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ea580c', marginRight: 3 }} />{t('overview.calendar.personal')}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#9ca3af' }}>
+              <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#2563eb', marginRight: 3 }} />{t('overview.calendar.external')}</span>
+              <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#7c3aed', marginRight: 3 }} />{t('overview.calendar.internal')}</span>
+              <span><span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ea580c', marginRight: 3 }} />{t('overview.calendar.personal')}</span>
+            </div>
+            <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: 8, padding: 2 }}>
+              <button onClick={() => setCalendarView('upcoming')} style={{
+                padding: '5px 9px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                background: calendarView === 'upcoming' ? '#fff' : 'transparent',
+                color: calendarView === 'upcoming' ? '#1f2937' : '#6b7280',
+                boxShadow: calendarView === 'upcoming' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              }}>{t('overview.calendar.viewUpcoming')}</button>
+              <button onClick={() => setCalendarView('far')} style={{
+                padding: '5px 9px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                background: calendarView === 'far' ? '#fff' : 'transparent',
+                color: calendarView === 'far' ? '#1f2937' : '#6b7280',
+                boxShadow: calendarView === 'far' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              }}>{t('overview.calendar.viewFar')}</button>
+              <button onClick={() => setCalendarView('past')} style={{
+                padding: '5px 9px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                background: calendarView === 'past' ? '#fff' : 'transparent',
+                color: calendarView === 'past' ? '#1f2937' : '#6b7280',
+                boxShadow: calendarView === 'past' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              }}>{t('overview.calendar.viewPast')}</button>
+            </div>
           </div>
           {agenda.events.length === 0
-            ? <div style={{ color: '#9ca3af', fontSize: 13 }}>{t('overview.calendar.empty')}</div>
+            ? <div style={{ color: '#9ca3af', fontSize: 13 }}>{t(calendarView === 'past' ? 'overview.calendar.emptyPast' : 'overview.calendar.empty')}</div>
             : agenda.events.map(ev => <AgendaRow key={ev.id} event={ev} t={t} onPrep={handlePrep} />)
           }
         </Panel>
