@@ -1,22 +1,6 @@
 {
-  "last_synced": "2026-07-02T00:00:05",
+  "last_synced": "2026-07-03T00:00:06",
   "events": [
-    {
-      "id": "0hm6rj3i5hc7js18e9g8e5ar7o",
-      "title": "EIR x Harmonyenergy Introductory Meeting",
-      "start": "2026-06-02T14:00:00+02:00",
-      "end": "2026-06-02T14:30:00+02:00",
-      "type": "external",
-      "meet_url": null
-    },
-    {
-      "id": "ud92qvcq76smab4a0lfan1g17k_20260602T140000Z",
-      "title": "EIR Internal Meeting for Investors",
-      "start": "2026-06-02T16:00:00+02:00",
-      "end": "2026-06-02T16:30:00+02:00",
-      "type": "internal",
-      "meet_url": null
-    },
     {
       "id": "096maekag8i3to6vfkhqovjhgk",
       "title": "Lectures",
@@ -350,6 +334,22 @@
       "title": "EIR Internal Meeting for Investors",
       "start": "2026-07-14T16:00:00+02:00",
       "end": "2026-07-14T16:30:00+02:00",
+      "type": "internal",
+      "meet_url": null
+    },
+    {
+      "id": "ng8t4r127rt6kjr00ailjchnpj_20260716T110000Z",
+      "title": "Zein / Mariella",
+      "start": "2026-07-16T13:00:00+02:00",
+      "end": "2026-07-16T14:00:00+02:00",
+      "type": "internal",
+      "meet_url": null
+    },
+    {
+      "id": "4kq82rf4m42cu4rukjhmef0qjf_20260716T140000Z",
+      "title": "EIR Investor Strategy Discussions",
+      "start": "2026-07-16T16:00:00+02:00",
+      "end": "2026-07-16T16:30:00+02:00",
       "type": "internal",
       "meet_url": null
     }

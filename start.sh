@@ -1,6 +1,10 @@
 #!/bin/bash
 echo "🚀 Démarrage Hermes MVP..."
 
+# Nettoyage des instances précédentes (évite l'accumulation de process orphelins)
+kill $(lsof -t -i:3000) 2>/dev/null
+kill $(lsof -t -i:8000) 2>/dev/null
+
 # PostgreSQL
 service postgresql start 2>/dev/null
 echo "✅ PostgreSQL démarré"
